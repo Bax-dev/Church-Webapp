@@ -1,0 +1,1 @@
+- [Presbyterian Centre identity](presbyterian-centre.md) — Church Member Portal belongs to Presbyterian Centre, Lekki–Epe Expressway, Lekki; use blue and white.

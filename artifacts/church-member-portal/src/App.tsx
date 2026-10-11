@@ -4,24 +4,24 @@ import gatheringImage from './assets/community-gathering.png';
 
 const questions = [
   {
-    question: 'What is the Church Member Portal?',
+    question: 'What is Presbyterian Centre?',
     answer:
-      'It is a welcoming digital home for a church community: a place for members to keep their details current and stay connected to their department and district, while leaders spend less time managing scattered information.',
+      'Presbyterian Centre is an introduction to a member portal designed to help members manage their profile and church connections, while administrators organise community information.',
   },
   {
     question: 'Can I create an account here?',
     answer:
-      'Not yet. This page introduces the portal, but account registration and sign-in are not available here. Your church will share access instructions when the member portal is ready for your community.',
+      'No. This is a public introduction page only. Registration, sign-in and all other account flows are not connected here.',
   },
   {
     question: 'Who can see my information?',
     answer:
-      'Member information should be handled with care and made available only to the people who need it for church community and pastoral administration. Privacy and permissions belong in the portal itself, which is not connected on this page.',
+      'In the planned portal, members can view and edit only their own information, while super administrators can manage all member information. These access controls are planned and are not live on this public page.',
   },
   {
     question: 'What if my details change?',
     answer:
-      'The portal is designed to give members a straightforward way to keep their details up to date. Until access is available, please use the contact method your church already provides.',
+      'The planned member experience includes profile updates, with verification for email changes. Profile management is not connected on this page.',
   },
 ];
 
@@ -58,11 +58,11 @@ function App() {
       <a className="skip-link" href="#main-content">Skip to content</a>
       <header className="topbar">
         <div className="container nav-inner">
-          <a className="brand" href="#top" aria-label="Church Member Portal, home" onClick={closeMenu}>
+          <a className="brand" href="#top" aria-label="Presbyterian Centre, home" onClick={closeMenu}>
             <BrandMark />
             <span>
-              <span className="brand-name">Church Member Portal</span>
-              <span className="brand-caption">A place to belong</span>
+              <span className="brand-name">Presbyterian Centre</span>
+              <span className="brand-caption">Lekki, Lagos</span>
             </span>
           </a>
           <nav id="main-navigation" className={`nav-links${menuOpen ? ' open' : ''}`} aria-label="Main navigation">
@@ -88,10 +88,10 @@ function App() {
         <section className="hero" id="top" aria-labelledby="hero-title">
           <div className="container hero-grid">
             <div className="hero-copy">
-              <div className="hero-label eyebrow">A digital home for your church family</div>
-              <h1 id="hero-title">Known by name.<br /><em>Connected</em> in faith.</h1>
+              <div className="hero-label eyebrow">Presbyterian Centre · Lekki</div>
+              <h1 id="hero-title">People first.<br /><em>Connection</em> made clearer.</h1>
               <p className="hero-intro">
-                The people are the heart of a church. This is a simpler way to care for the details, so there is more room for the connection.
+                An introduction to a member portal designed to bring profiles, departments and districts into clearer view for the Presbyterian Centre community.
               </p>
               <div className="hero-actions">
                 <button className="button-primary" onClick={openAccess}>Find out about access <ArrowRight size={16} /></button>
@@ -101,14 +101,14 @@ function App() {
             </div>
             <div className="hero-art">
               <div className="hero-art-frame">
-                <img src={gatheringImage} alt="Church community members sharing a relaxed moment together around a table." />
-                <div className="art-caption"><small>Church is people</small>There is room for everyone at the table.</div>
+                <img src={gatheringImage} alt="Illustrative image of people gathered around a table; not a photograph of Presbyterian Centre." />
+                <div className="art-caption"><small>Illustrative community image</small>A clearer home for member connections.</div>
               </div>
               <div className="floating-note" aria-label="A little less admin, a little more care">
                 <strong>A little less admin.<br />A little more care.</strong>
                 <span>Connection, made simpler.</span>
               </div>
-              <div className="hero-stamp"><span>Belong<br />together</span></div>
+              <div className="hero-stamp"><span>Presbyterian<br />Centre</span></div>
             </div>
           </div>
         </section>
@@ -124,26 +124,26 @@ function App() {
         <section className="section why" id="the-portal" aria-labelledby="why-title">
           <div className="container why-grid">
             <div className="why-aside">
-              <span className="eyebrow">A simple idea, with people at the centre</span>
-              <h2 id="why-title">Less time chasing details. More time seeing one another.</h2>
-              <p>Good care starts with knowing who is part of the family. The portal brings the essentials together, without letting admin get in the way of the human things.</p>
+              <span className="eyebrow">A clearer picture of the community</span>
+              <h2 id="why-title">Member details and church connections, in one place.</h2>
+              <p>The portal is designed to support member profiles and help administrators understand the community through organised records and useful summaries.</p>
             </div>
             <div className="why-list">
               <article className="why-item">
                 <span className="why-number">01</span>
-                <div><h3>Your details, kept current</h3><p>Members can keep the information they share with their church up to date, all in one considered place.</p></div>
+                <div><h3>Member profiles</h3><p>Members can manage their profile details, with email changes subject to verification.</p></div>
               </article>
               <article className="why-item">
                 <span className="why-number">02</span>
-                <div><h3>A clearer sense of belonging</h3><p>Stay connected to the department and district that shape your part in the wider church community.</p></div>
+                <div><h3>Departments and districts</h3><p>Member records can reflect the department and district each person belongs to.</p></div>
               </article>
               <article className="why-item">
                 <span className="why-number">03</span>
-                <div><h3>Care that is easier to coordinate</h3><p>Church leaders can spend less energy reconciling lists and more energy being present with people.</p></div>
+                <div><h3>Useful administration</h3><p>Administrators can review member records, manage groups and find upcoming birthdays.</p></div>
               </article>
               <article className="why-item">
                 <span className="why-number">04</span>
-                <div><h3>One shared picture, handled thoughtfully</h3><p>Keep the community's information together and approach every detail with the respect it deserves.</p></div>
+                <div><h3>Clearer oversight</h3><p>Administrative views include reports, filtered exports and an audit history.</p></div>
               </article>
             </div>
           </div>
@@ -155,7 +155,7 @@ function App() {
               <div className="section-head">
                 <span className="eyebrow">A place for every part of the family</span>
                 <h2 id="pathways-title">Different roles.<br />One shared life.</h2>
-                <p>Whether you are keeping your own information current or caring for the whole community, the portal is designed around the way church life really works.</p>
+                  <p>The portal is planned around two distinct needs: members managing their own details and super administrators overseeing member and group records.</p>
               </div>
             </div>
             <div className="pathways-grid">
@@ -163,18 +163,18 @@ function App() {
                 <span className="card-note">For members</span>
                 <span className="card-icon"><Heart size={19} strokeWidth={1.7} /></span>
                 <div>
-                  <h3>Your place in the community, close at hand.</h3>
-                  <p>Keep your personal details current and see the church connections that help you feel at home.</p>
-                  <button className="pathway-link" onClick={openAccess}>How member access works <ArrowRight size={15} /></button>
+                  <h3>Your profile and connections.</h3>
+                  <p>The planned member experience brings together verified registration, sign-in and password tools, profile updates with optional photos, verified email changes and account deletion requests.</p>
+                  <button className="pathway-link" onClick={openAccess}>About the member portal <ArrowRight size={15} /></button>
                 </div>
               </article>
               <article className="pathway-card leaders">
-                <span className="card-note">For church leaders</span>
+                <span className="card-note">For super administrators</span>
                 <span className="card-icon"><Users size={19} strokeWidth={1.7} /></span>
                 <div>
-                  <h3>Better information for more attentive care.</h3>
-                  <p>Keep member, department and district information organised, so the important follow-through is easier.</p>
-                  <button className="pathway-link" onClick={openAccess}>How leader access works <ArrowRight size={15} /></button>
+                  <h3>A more organised administrative view.</h3>
+                  <p>Super administrators are planned to review community summaries and birthdays, manage members and groups, explore reports and audit history, export filtered lists, and oversee approval settings and other administrators.</p>
+                  <button className="pathway-link" onClick={openAccess}>About administration <ArrowRight size={15} /></button>
                 </div>
               </article>
             </div>
@@ -184,17 +184,17 @@ function App() {
         <section className="section experience" aria-labelledby="experience-title">
           <div className="container experience-layout">
             <div className="experience-art">
-              <img src={gatheringImage} alt="A welcoming shared table in a church community gathering space." loading="lazy" />
+              <img src={gatheringImage} alt="Illustrative image of a community gathering; not a photograph of the Centre." loading="lazy" />
             </div>
             <div className="experience-copy">
-              <span className="eyebrow">Made for the life between Sundays, too</span>
-              <h2 id="experience-title">A little more space for what matters.</h2>
-              <p>When the practical details have a home, the people looking after them can give more attention to the people behind them.</p>
+              <span className="eyebrow">Designed for members and administrators</span>
+              <h2 id="experience-title">The essentials, thoughtfully organised.</h2>
+              <p>The planned portal brings together the practical tasks members and super administrators need to manage community records.</p>
               <ul className="feature-list">
-                <li><Check size={17} /><span>A clearer way to keep member details in one place</span></li>
-                <li><Check size={17} /><span>Church departments and districts connected to the people in them</span></li>
-                <li><Check size={17} /><span>Less time spent checking and re-checking administrative records</span></li>
-                <li><Check size={17} /><span>A more considerate experience for members and leaders alike</span></li>
+                <li><Check size={17} /><span>Verified registration, sign-in and password recovery or change</span></li>
+                <li><Check size={17} /><span>Profile updates, optional photos, verified email changes and deletion requests</span></li>
+                <li><Check size={17} /><span>Department and district records with administrator summaries and upcoming birthdays</span></li>
+                <li><Check size={17} /><span>Member search, reports, audit history and filtered CSV, Excel or PDF exports</span></li>
               </ul>
             </div>
           </div>
@@ -203,15 +203,15 @@ function App() {
         <section className="section values" id="our-values" aria-labelledby="values-title">
           <div className="container values-inner">
             <div>
-              <span className="eyebrow">The way we believe it should feel</span>
+              <span className="eyebrow">A considered approach to member information</span>
               <h2 id="values-title">Technology<br />in its right place.</h2>
-              <p className="values-intro">Useful, quietly dependable, and always in service of the relationships that make a church a community.</p>
+              <p className="values-intro">The portal is intended to make membership information easier to maintain and review, while keeping account functions separate from this public introduction.</p>
             </div>
             <div className="values-words">
-              <div className="value"><strong>Welcoming</strong><span>Clear and approachable, for people with all kinds of digital confidence.</span></div>
-              <div className="value"><strong>Trustworthy</strong><span>Personal information is treated with dignity, care and purpose.</span></div>
-              <div className="value"><strong>Grounded</strong><span>Built around real church connections, not abstract organisation charts.</span></div>
-              <div className="value"><strong>Human</strong><span>A tool for caring for people, never a replacement for showing up.</span></div>
+              <div className="value"><strong>Member-led</strong><span>Designed for members to maintain their own profile details.</span></div>
+              <div className="value"><strong>Verified</strong><span>Email verification is part of registration and email-change flows.</span></div>
+              <div className="value"><strong>Organised</strong><span>Departments and districts help structure member records.</span></div>
+              <div className="value"><strong>Accountable</strong><span>Administrator tools are planned to include reports and audit history.</span></div>
             </div>
           </div>
         </section>
@@ -219,9 +219,9 @@ function App() {
         <section className="access" aria-labelledby="access-title">
           <div className="container access-card">
             <div>
-              <span className="eyebrow">A note about getting started</span>
-              <h2 id="access-title">Your church will show you the way in.</h2>
-              <p>This page is an introduction, not a sign-in or registration service. When portal access is ready for your church, its leaders will share the right next steps with you.</p>
+              <span className="eyebrow">About this page</span>
+              <h2 id="access-title">An introduction, not an account portal.</h2>
+              <p>Presbyterian Centre’s member portal account flows are not connected here. This page does not register members, sign anyone in or collect account information.</p>
             </div>
             <div className="access-actions">
               <button className="button-primary" onClick={openAccess}>Understand access <ArrowRight size={16} /></button>
@@ -233,9 +233,9 @@ function App() {
         <section className="section faq" id="questions" aria-labelledby="faq-title">
           <div className="container faq-layout">
             <div className="faq-heading">
-              <span className="eyebrow">Good to know</span>
+              <span className="eyebrow">Presbyterian Centre · Lekki</span>
               <h2 id="faq-title">A few things you may be wondering.</h2>
-              <p>Have a question about how a member portal can serve a church community? Start here.</p>
+              <p>Find out what this introduction covers, and what is not available from this page.</p>
             </div>
             <div className="faq-list">
               {questions.map((item, index) => {
@@ -264,11 +264,12 @@ function App() {
         <div className="container">
           <div className="footer-main">
             <div>
-              <a className="brand" href="#top">
+              <a className="brand" href="#top" aria-label="Presbyterian Centre, home">
                 <BrandMark />
-                <span><span className="brand-name">Church Member Portal</span><span className="brand-caption">A place to belong</span></span>
+                <span><span className="brand-name">Presbyterian Centre</span><span className="brand-caption">Lekki, Lagos</span></span>
               </a>
-              <p className="footer-copy">A more thoughtful home for the details that help a church family stay connected.</p>
+              <p className="footer-copy">An introduction to the planned member portal for Presbyterian Centre.</p>
+              <p className="footer-copy footer-location">Lekki–Epe Expressway, Lekki</p>
             </div>
             <nav className="footer-nav" aria-label="Footer navigation">
               <div className="footer-column">
@@ -285,7 +286,7 @@ function App() {
             </nav>
           </div>
           <div className="footer-bottom">
-            <span>Made to help people care for people.</span>
+            <span>Presbyterian Centre · Lekki–Epe Expressway, Lekki</span>
             <a className="back-top" href="#top">Back to the beginning <ArrowUp size={14} /></a>
           </div>
         </div>
@@ -299,7 +300,7 @@ function App() {
             <button className="modal-close" onClick={() => setAccessOpen(false)} aria-label="Close access information"><X size={18} /></button>
             <span className="eyebrow">Portal access</span>
             <h2 id="modal-title">A welcome, not a dead end.</h2>
-            <p id="modal-description">The member portal's sign-in and registration are not connected to this introduction page. Your church leadership will share access details when they are available for your community.</p>
+            <p id="modal-description">Registration, sign-in and other member-account actions are not connected to this introduction page. This page is informational only.</p>
             <div className="modal-note"><ShieldCheck size={17} /> For now, no information is collected here and no account is created. This page is here to help you understand what the portal is for.</div>
           </section>
         </div>
