@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Church Member Portal"
+description = "A responsive public landing page introducing a church member portal, explaining member and administrator benefits, and directing visitors to signup or sign-in."
+version = "1.0.0"
+id = "artifacts/church-member-portal"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18731
+
+[services.development]
+run = "pnpm --filter @workspace/church-member-portal run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/church-member-portal", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/church-member-portal/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18731"
+BASE_PATH = "/"

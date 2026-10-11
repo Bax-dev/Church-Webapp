@@ -1,0 +1,125 @@
+# Build Prompt: Church Member Portal
+
+> Paste this into your AI coding assistant (Claude Code, Cursor, etc.) together with `PRD-church-member-portal.md`. For best results, build in the phases listed at the bottom, one at a time.
+
+---
+
+## Role
+
+You are a senior full-stack engineer. Build a production-ready **Church Member Portal** using **Next.js (App Router, TypeScript) for both frontend and backend**, **PostgreSQL** as the database, **Redis** for sessions/tokens/rate limiting/caching, and **JWT** for authentication. Follow the attached PRD as the source of truth.
+
+## Tech Requirements
+
+- Next.js 14+ App Router, TypeScript (strict mode), Route Handlers in `app/api/*`
+- PostgreSQL with **Prisma** ORM and migrations
+- Redis via `ioredis`
+- JWT using the `jose` library (access token 15 min, refresh token 7 days, both in httpOnly Secure SameSite=Lax cookies)
+- Passwords hashed with **Argon2id** (`argon2` package)
+- Validation with **Zod**, shared between client and server
+- Tailwind CSS + shadcn/ui, React Hook Form, TanStack Query
+- Email via Nodemailer (SMTP configured through env vars)
+- Export with `exceljs` (xlsx), `papaparse` (csv), `pdfkit` (pdf)
+- Docker Compose file for local PostgreSQL and Redis
+
+## What to Build
+
+### Roles
+`MEMBER` and `SUPER_ADMIN`. Members see and edit only their own data. Super Admin sees and manages everything.
+
+### Member features
+1. Signup with: first name, last name, email, phone, password, date of birth, marital status (Single, Married, Widowed, Divorced, Separated), address (line, city, state, country), church department (dropdown), district (dropdown), and a consent checkbox.
+2. Email verification before login (token stored hashed in Redis, TTL 24 h).
+3. Login, logout, forgot password, reset password (token in Redis, TTL 1 h, single use), change password.
+4. Profile page and edit-profile page. Members cannot change `role` or `status`. Changing email requires re-verification.
+5. Optional profile photo upload (JPG/PNG, max 2 MB).
+6. Account deletion request.
+
+### Super Admin features
+1. Dashboard: total members, new this month, counts by department and district, upcoming birthdays (cache stats in Redis for 5 minutes).
+2. Members table: server-side pagination, sorting, search (name, email, phone), filters (department, district, marital status, status, birthday month).
+3. View, edit, deactivate/reactivate, delete, and manually add members; trigger a password reset email.
+4. CRUD for departments and districts (archive instead of hard delete when in use).
+5. Export the current filtered list to CSV, Excel, and PDF.
+6. Reports: birthdays by month, members by department, members by district, marital status summary.
+7. Audit log of every change (actor, target, action, old value, new value, IP, timestamp) with a viewer page.
+8. Settings: toggle auto-approve vs manual approval for new signups.
+9. Manage other admin accounts.
+
+## Authentication and Security Rules (must follow)
+
+- Access token payload: `sub`, `role`, `jti`. Verify in `middleware.ts` for `/admin/*`, `/dashboard`, `/profile`, and `/api/*` (except public auth routes).
+- Store each refresh token's `jti` in Redis as `refresh:{userId}:{jti}` with a 7-day TTL. On `/api/auth/refresh`, validate against Redis and **rotate** the token (delete old, issue new).
+- On logout: delete the refresh `jti`, add the access `jti` to `blacklist:{jti}` until expiry, clear cookies. On password change or reset: delete all of that user's refresh keys.
+- Redis rate limits: login 5 per 15 min per IP+email with temporary lockout; signup 10 per hour per IP; forgot-password 3 per hour per email.
+- Re-check the role inside **every** admin API handler; do not rely on middleware alone.
+- `/api/me` must take the user id from the verified JWT only, never from params or body (prevent IDOR).
+- Whitelist updatable fields with Zod; strip unknown keys; never accept `role`, `status`, or `emailVerified` from member requests.
+- Generic error messages on login and forgot-password to prevent account enumeration.
+- Never return or log `passwordHash` or tokens.
+- Add security headers (CSP, HSTS, X-Frame-Options, Referrer-Policy) in `next.config.js`, and an origin check on mutating requests.
+- Secrets only from environment variables.
+
+## Database
+
+Use the Prisma schema from the PRD (User, Department, District, AuditLog, Setting with the enums Role, Status, MaritalStatus). Add indexes on lastName/firstName, departmentId, districtId, status. Write a `prisma/seed.ts` that creates:
+- the first Super Admin (from `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD`, already verified and ACTIVE)
+- sample departments (Choir, Ushering, Media, Children, Youth, Protocol, Prayer, Welfare)
+- sample districts (District 1 to District 5)
+
+## API Contract
+
+Implement the endpoints exactly as listed in the PRD, section 8. All responses use `{ success: boolean, data?: any, error?: { code: string, message: string } }`. Use correct HTTP status codes (400, 401, 403, 404, 409, 429).
+
+## Project Structure
+
+```
+/src
+  /app
+    /(public)  login, signup, verify-email, forgot-password, reset-password
+    /(member)  dashboard, profile, settings
+    /(admin)   admin/members, departments, districts, reports, audit-log, users, settings
+    /api       auth/*, me/*, admin/*, lookups
+  /components  ui, forms, tables, charts
+  /lib         prisma.ts, redis.ts, jwt.ts, auth.ts, rbac.ts, email.ts, rateLimit.ts, audit.ts
+  /validators  zod schemas
+  middleware.ts
+/prisma        schema.prisma, seed.ts
+docker-compose.yml, .env.example, README.md
+```
+
+## UI Requirements
+
+- Mobile-first and responsive (must work at 360 px width), clean and accessible (labelled inputs, good contrast, visible focus, error messages under fields).
+- Loading states, empty states, toast notifications, confirmation dialogs for delete/deactivate.
+- Members table: sticky header, column sorting, filter chips, pagination, and an export dropdown.
+- Admin dashboard with simple charts (members by department and district).
+
+## Deliverables
+
+1. Complete working code for all of the above.
+2. `docker-compose.yml` (PostgreSQL + Redis), `.env.example`, Prisma migrations, and seed script.
+3. `README.md` with setup steps: install, env config, `docker compose up`, `prisma migrate`, `prisma db seed`, `npm run dev`, and deployment notes.
+4. Tests: unit tests (validators, JWT helpers, RBAC, rate limiter) with Vitest, and Playwright E2E tests for signup to verify to login to edit profile, and admin filter and export.
+5. A short security checklist confirming each rule above is implemented.
+
+## Working Instructions
+
+- Build in the phases below. After each phase, stop, summarise what was done, list the files created, and tell me how to run and test it before continuing.
+- Prefer clear, typed, well-commented code. No placeholder or pseudo code; every file must be complete.
+- If any requirement is ambiguous, state your assumption briefly and proceed.
+
+## Phases
+
+**Phase 1: Foundation.** Project setup, Docker Compose, Prisma schema, migrations, seed, Redis and Prisma clients, env validation.
+
+**Phase 2: Authentication.** Signup, email verification, login, refresh rotation, logout, forgot/reset/change password, middleware, rate limiting.
+
+**Phase 3: Member portal.** Dashboard, view and edit profile, lookups API, photo upload, deletion request.
+
+**Phase 4: Super Admin.** Members table with search/filter/pagination, member detail and edit, departments and districts CRUD, add member, reset password.
+
+**Phase 5: Reporting and audit.** Dashboard stats with Redis cache, reports, CSV/Excel/PDF export, audit log viewer, settings.
+
+**Phase 6: Hardening and tests.** Security headers, error handling, unit and E2E tests, README, final security checklist.
+
+Start with **Phase 1** now.
