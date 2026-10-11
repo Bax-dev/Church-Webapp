@@ -1,19 +1,46 @@
 {
-  "name": "workspace",
-  "version": "0.0.0",
-  "license": "MIT",
-  "scripts": {
-    "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
-    "build": "pnpm run typecheck && pnpm -r --if-present run build",
-    "typecheck:libs": "tsc --build",
-    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
-  },
+  "name": "presbyterian-centre",
+  "version": "0.1.0",
   "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "next typegen && tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx --env-file-if-exists=.env.local scripts/migrate.ts",
+    "db:seed": "tsx --env-file-if-exists=.env.local scripts/seed.ts"
+  },
   "dependencies": {
-    "@replit/connectors-sdk": "^0.4.3"
+    "@aws-sdk/client-s3": "^3.1149.0",
+    "@aws-sdk/s3-request-presigner": "^3.1149.0",
+    "@node-rs/argon2": "2.2.2",
+    "drizzle-orm": "0.45.4",
+    "exceljs": "4.4.0",
+    "framer-motion": "^14.1.0",
+    "ioredis": "^5.11.1",
+    "jose": "6.2.12",
+    "lucide-react": "^0.545.0",
+    "next": "^16.4.0",
+    "nodemailer": "^10.1.0",
+    "pdfkit": "0.20.2",
+    "postgres": "3.4.9",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "resend": "^6.32.1",
+    "three": "^0.186.1",
+    "zod": "4.6.6"
   },
   "devDependencies": {
-    "prettier": "^3.9.6",
+    "@types/node": "^25.3.3",
+    "@types/nodemailer": "^8.0.2",
+    "@types/pdfkit": "^0.17.6",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@types/three": "^0.186.0",
+    "drizzle-kit": "0.31.11",
+    "tsx": "^4.23.15",
     "typescript": "~5.9.3"
   }
 }
