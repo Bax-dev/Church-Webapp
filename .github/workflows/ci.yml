@@ -1,4 +1,5 @@
 # Checks every pull request and push: types and a production build.
+# The build needs no database or secrets: pages with admin-edited content render per request.
 name: CI
 
 on:
@@ -22,6 +23,3 @@ jobs:
       - run: yarn install --frozen-lockfile
       - run: yarn typecheck
       - run: yarn build
-        env:
-          # The build does not connect to these; production values are only set at deploy time.
-          DATABASE_URL: postgres://build:build@localhost:5432/build

@@ -4,13 +4,13 @@ import { and, desc, eq, lte } from 'drizzle-orm'
 
 import { guideSchema, lagosNow, readProgram, type PrayerGuide, type PrayerProgram, type StoredGuide } from '@/config/prayer'
 import { db, schema } from '@/lib/server/db'
+import { readSetting } from '@/lib/server/settings'
 
 const KEY = 'prayer'
 const { prayerGuides } = schema
 
 export async function getProgram(): Promise<PrayerProgram> {
-  const row = await db.query.settings.findFirst({ where: eq(schema.settings.key, KEY) })
-  return readProgram(row?.value)
+  return readProgram(await readSetting(KEY))
 }
 
 /** For pages: once per request, and never fails the page (an unreachable database means "switched off"). */

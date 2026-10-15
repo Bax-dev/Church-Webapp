@@ -1,11 +1,11 @@
 /** Pastors for the About page: one ordered list in the settings table, photos in object storage under pastors/. */
 import { randomBytes } from 'node:crypto'
-import { eq } from 'drizzle-orm'
 
 import { PASTOR_PHOTO_ROUTE, parsePastors, type Pastor } from '@/config/pastors'
 import { db, schema } from '@/lib/server/db'
 import { sniff } from '@/lib/server/photos'
 import { storage } from '@/lib/server/s3'
+import { readSetting } from '@/lib/server/settings'
 
 const KEY = 'pastors'
 const MAX_BYTES = 2 * 1024 * 1024
@@ -13,8 +13,7 @@ const key = (name: string) => `pastors/${name}`
 const FILE_NAME = /^[0-9a-f]{16}\.(jpg|png)$/
 
 export async function getPastors(): Promise<Pastor[]> {
-  const row = await db.query.settings.findFirst({ where: eq(schema.settings.key, KEY) })
-  return parsePastors(row?.value)
+  return parsePastors(await readSetting(KEY))
 }
 
 export async function savePastors(pastors: Pastor[]) {

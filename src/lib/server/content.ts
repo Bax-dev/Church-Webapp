@@ -1,7 +1,6 @@
 /** Site content (src/config/content.ts): stored as one JSON value in the settings table, merged over the defaults. */
 import { randomBytes } from 'node:crypto'
 import { cache } from 'react'
-import { eq } from 'drizzle-orm'
 
 import {
   SITE_IMAGE_ROUTE, contentDefaults, fillTokens, isUploadSrc, readContent, uploadedImages, type ContentGroup, type SiteContent,
@@ -10,6 +9,7 @@ import { db, schema } from '@/lib/server/db'
 import { getProgram } from '@/lib/server/prayer'
 import { sniff } from '@/lib/server/photos'
 import { storage } from '@/lib/server/s3'
+import { readSetting } from '@/lib/server/settings'
 
 const KEY = 'content'
 const MAX_BYTES = 5 * 1024 * 1024
@@ -17,14 +17,9 @@ const FILE_NAME = /^[0-9a-f]{16}\.(jpg|png)$/
 const PREFIX = 'site/'
 const key = (name: string) => `${PREFIX}${name}`
 
-async function readStored() {
-  const row = await db.query.settings.findFirst({ where: eq(schema.settings.key, KEY) })
-  return row?.value
-}
-
 /** The content as an admin edits it: placeholders like {church} left in. */
 export async function getRawContent(): Promise<SiteContent> {
-  return readContent(await readStored())
+  return readContent(await readSetting(KEY))
 }
 
 /**
