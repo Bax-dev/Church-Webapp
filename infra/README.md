@@ -38,7 +38,9 @@ The workflow signs in with OpenID Connect, so no AWS access keys are stored in G
    - URL `https://token.actions.githubusercontent.com`, audience `sts.amazonaws.com`
 2. IAM → Roles → Create role → Web identity → that provider, audience `sts.amazonaws.com`
    - GitHub organization `Bax-dev`, repository `Church-Webapp`, environment `production`
-   - Check that the trust policy's `sub` condition is `repo:Bax-dev/Church-Webapp:environment:production`.
+   - Check the trust policy's `sub` condition. This repo uses GitHub's immutable subject format:
+     `repo:Bax-dev@102530808/Church-Webapp@1420687314:environment:production`
+     (`gh api repos/Bax-dev/Church-Webapp/actions/oidc/customization/sub` shows the prefix).
 3. Permissions: SST creates Lambda functions, CloudFront distributions, S3 buckets, a DynamoDB table, IAM roles and SSM parameters. Grant enough for that. Many teams start with `AdministratorAccess` on this role, which is limited by the trust policy above to production deploys from this repo. Narrow it if your account rules require.
 4. Copy the role ARN.
 
