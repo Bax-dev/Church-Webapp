@@ -33,7 +33,8 @@ cat > "$TMP/trust.json" <<EOF
    "token.actions.githubusercontent.com:aud":"sts.amazonaws.com",
    "token.actions.githubusercontent.com:sub":"${SUB_PREFIX}:environment:production"}}}]}
 EOF
-# Full access only to the services SST uses; IAM limited to the app's own roles.
+# Full access only to the services SST uses; IAM limited to the app's own roles; ECR limited to the `sst-asset`
+# repository that SST's first-run bootstrap creates.
 cat > "$TMP/policy.json" <<EOF
 {"Version":"2012-10-17","Statement":[
  {"Sid":"SstServices","Effect":"Allow","Action":[
@@ -45,6 +46,8 @@ cat > "$TMP/policy.json" <<EOF
    "iam:AttachRolePolicy","iam:DetachRolePolicy","iam:ListRolePolicies","iam:ListAttachedRolePolicies",
    "iam:ListInstanceProfilesForRole","iam:PassRole"],
   "Resource":"arn:aws:iam::${ACCT}:role/pcn-app-*"},
+ {"Sid":"SstAssetRepo","Effect":"Allow","Action":"ecr:*","Resource":"arn:aws:ecr:*:${ACCT}:repository/sst-asset"},
+ {"Sid":"EcrLogin","Effect":"Allow","Action":"ecr:GetAuthorizationToken","Resource":"*"},
  {"Sid":"ServiceLinkedRoles","Effect":"Allow","Action":"iam:CreateServiceLinkedRole","Resource":"*",
   "Condition":{"StringLike":{"iam:AWSServiceName":["lambda.amazonaws.com","replicator.lambda.amazonaws.com","logger.cloudfront.amazonaws.com"]}}}
 ]}
