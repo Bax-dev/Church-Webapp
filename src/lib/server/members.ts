@@ -6,7 +6,7 @@ import { lagosToday, upcomingBirthdays } from '@/config/portal'
 import type { MemberQuery } from '@/lib/schemas'
 import { db, schema } from '@/lib/server/db'
 import type { AuditRow, UserRow } from '@/lib/server/db/schema'
-import { redis } from '@/lib/server/redis'
+import { kv } from '@/lib/server/kv'
 
 const { users, departments, districts, auditLogs } = schema
 const iso = (date: Date | null) => (date ? date.toISOString() : null)
@@ -95,7 +95,7 @@ function memberOrder(query: Pick<MemberQuery, 'sort' | 'dir'>) {
   const dir = query.dir === 'desc' ? desc : asc
   if (query.sort === 'createdAt') return [dir(users.createdAt)]
   // Birthdays sort by month and day, so the list reads like a calendar rather than by age.
-  if (query.sort === 'dateOfBirth') return [dir(sql`to_char(${users.dateOfBirth}, 'MM-DD')`), asc(users.lastName)]
+  if (query.sort === 'dateOfBirth') return [sql`${users.dateOfBirth} is null`, dir(sql`to_char(${users.dateOfBirth}, 'MM-DD')`), asc(users.lastName)]
   return [dir(users.lastName), dir(users.firstName)]
 }
 
@@ -117,7 +117,7 @@ export async function allMembers(query: Partial<MemberQuery>) {
 }
 
 export const STATS_CACHE_KEY = 'cache:admin:stats'
-export const invalidateStats = () => redis.del(STATS_CACHE_KEY)
+export const invalidateStats = () => kv.del(STATS_CACHE_KEY)
 
 export type AdminStats = {
   total: number
@@ -131,9 +131,9 @@ export type AdminStats = {
   deletionRequests: { id: string; name: string; requestedAt: string }[]
 }
 
-/** Dashboard figures (PRD A-01), cached in Redis for five minutes and cleared whenever a member changes. */
+/** Dashboard figures (PRD A-01), cached in the key store for five minutes and cleared whenever a member changes. */
 export async function adminStats(): Promise<AdminStats> {
-  const cached = await redis.get(STATS_CACHE_KEY)
+  const cached = await kv.get(STATS_CACHE_KEY)
   if (cached) return JSON.parse(cached) as AdminStats
 
   const monthStart = `${lagosToday().slice(0, 7)}-01`
@@ -166,7 +166,7 @@ export async function adminStats(): Promise<AdminStats> {
     deletionRequests: people.filter((p) => p.deletionRequestedAt)
       .map((p) => ({ id: p.id, name: name(p), requestedAt: p.deletionRequestedAt!.toISOString() })),
   }
-  await redis.set(STATS_CACHE_KEY, JSON.stringify(stats), 'EX', 300)
+  await kv.set(STATS_CACHE_KEY, JSON.stringify(stats), 300)
   return stats
 }
 

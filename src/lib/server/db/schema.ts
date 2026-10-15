@@ -77,6 +77,17 @@ export const auditLogs = pgTable('audit_logs', {
   index('audit_created_idx').on(t.createdAt),
 ])
 
+/** One prayer guide per date for the prayer programme (src/config/prayer.ts); the guide itself is JSON. */
+export const prayerGuides = pgTable('prayer_guides', {
+  id: id(),
+  date: date('date', { mode: 'string' }).notNull().unique(),
+  theme: text('theme').notNull(),
+  published: boolean('published').notNull().default(true),
+  body: jsonb('body').notNull(),
+  createdAt: at('created_at').notNull().defaultNow(),
+  updatedAt: at('updated_at').notNull().defaultNow().$onUpdate(() => new Date()),
+}, (t) => [index('prayer_guides_published_date_idx').on(t.published, t.date)])
+
 export const settings = pgTable('settings', {
   key: text('key').primaryKey(),
   value: jsonb('value').notNull(),

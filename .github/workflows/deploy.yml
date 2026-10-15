@@ -1,0 +1,56 @@
+# Deploys main to AWS: database migrations, then the app (sst.config.ts).
+# Setup (once): see infra/README.md for the AWS role and the secrets/variables this reads.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# One deploy at a time; a newer push waits rather than cancelling one halfway through.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  id-token: write # lets the job sign in to AWS with OIDC instead of stored access keys
+  contents: read
+
+jobs:
+  deploy:
+    # The Lambda runs on arm64, and @node-rs/argon2 ships a native binary per platform:
+    # building on Linux arm64 makes yarn install the binary the Lambda can load.
+    runs-on: ubuntu-24.04-arm
+    environment: production
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      DOMAIN: ${{ vars.DOMAIN }}
+      APP_URL: ${{ vars.APP_URL }}
+      EMAIL_FROM: ${{ vars.EMAIL_FROM }}
+      RESEND_FROM: ${{ vars.RESEND_FROM }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      JWT_ACCESS_SECRET: ${{ secrets.JWT_ACCESS_SECRET }}
+      JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASS: ${{ secrets.SMTP_PASS }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - run: yarn typecheck
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # Before the new code goes live, so it never runs against an older schema.
+      - run: yarn db:migrate
+
+      - run: npx sst deploy --stage production

@@ -7,7 +7,7 @@ import { LogOut } from 'lucide-react'
 import { api } from '@/lib/api-client'
 
 /** Revokes the session on the server, then reloads the current view so every menu switches back to the guest links. */
-export function SignOutButton({ className, icon }: { className?: string; icon?: boolean }) {
+export function SignOutButton({ className, icon, label = 'Sign out' }: { className?: string; icon?: boolean; label?: string }) {
   const router = useRouter()
   const [busy, setBusy] = useState(false)
 
@@ -21,7 +21,7 @@ export function SignOutButton({ className, icon }: { className?: string; icon?: 
   return (
     <button type="button" className={className} onClick={signOut} disabled={busy}>
       {icon && <LogOut size={16} strokeWidth={1.8} aria-hidden="true" />}
-      {busy ? 'Signing out…' : 'Sign out'}
+      {busy ? 'Signing out…' : label}
     </button>
   )
 }

@@ -1,14 +1,14 @@
 import type { MetadataRoute } from 'next'
 
-import { SITE } from '@/config/site'
+import { getContent } from '@/lib/server/content'
 
-export const dynamic = 'force-static'
-
-export default function manifest(): MetadataRoute.Manifest {
+/** Read on request, so the installed-app name follows Admin → Site content → Church details. */
+export default async function manifest(): Promise<MetadataRoute.Manifest> {
+  const { identity, address } = (await getContent()).site
   return {
-    name: `${SITE.name}, ${SITE.address.locality}`,
-    short_name: SITE.name,
-    description: SITE.description,
+    name: `${identity.name}, ${address.locality}`,
+    short_name: identity.name,
+    description: identity.description,
     start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',

@@ -1,6 +1,6 @@
 /**
- * JWT sessions backed by Redis (PRD §5).
- * Access token: 15 min, in an httpOnly cookie. Refresh token: 7 days, its jti stored at refresh:{userId}:{jti} and rotated on use.
+ * JWT sessions backed by the key store in kv.ts (PRD §5).
+ * Access token: 15 min, in an httpOnly cookie. Refresh token: 7 days, its jti stored at [refresh:{userId}, {jti}] and rotated on use.
  */
 import { createHash, randomBytes, randomUUID } from 'node:crypto'
 import { hash, verify } from '@node-rs/argon2'
@@ -11,7 +11,7 @@ import type { Role } from '@/config/portal'
 import { ACCESS_COOKIE, REFRESH_COOKIE } from '@/config/session'
 import { db, schema } from '@/lib/server/db'
 import { env } from '@/lib/server/env'
-import { redis } from '@/lib/server/redis'
+import { kv } from '@/lib/server/kv'
 
 export { ACCESS_COOKIE, REFRESH_COOKIE }
 
@@ -47,7 +47,7 @@ export async function currentRole(userId: string): Promise<Role | undefined> {
 }
 
 export async function isBlacklisted(jti: string) {
-  return (await redis.exists(`blacklist:${jti}`)) === 1
+  return (await kv.get(`blacklist:${jti}`)) !== undefined
 }
 
 export type TokenPair = { access: string; refresh: string }
@@ -63,9 +63,11 @@ export async function issueTokens(userId: string, role: Role): Promise<TokenPair
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(userId).setJti(refreshJti).setIssuedAt(now).setExpirationTime(now + env.refreshTtl)
     .sign(env.refreshSecret)
-  await redis.set(`refresh:${userId}:${refreshJti}`, '1', 'EX', env.refreshTtl)
+  await kv.set(refreshKey(userId, refreshJti), '1', env.refreshTtl)
   return { access, refresh }
 }
+
+const refreshKey = (userId: string, jti: string): [string, string] => [`refresh:${userId}`, jti]
 
 /** Seconds a rotated refresh token keeps working, so parallel requests (prefetches, two tabs) do not log the member out. */
 const ROTATION_GRACE = 30
@@ -81,16 +83,16 @@ export async function rotateTokens(refreshToken: string | undefined): Promise<(T
   } catch {
     return undefined
   }
-  const key = `refresh:${sub}:${jti}`
-  const state = await redis.get(key)
+  const key = refreshKey(sub, jti)
+  const state = await kv.get(key)
   if (!state) return undefined
   // The account may have been deactivated, deleted or had its role changed since the token was issued.
   const user = await db.query.users.findFirst({ where: eq(schema.users.id, sub), columns: { status: true, role: true } })
   if (!user || user.status !== 'ACTIVE') {
-    await redis.del(key)
+    await kv.del(key)
     return undefined
   }
-  if (state === '1') await redis.set(key, 'rotated', 'EX', ROTATION_GRACE)
+  if (state === '1') await kv.set(key, 'rotated', ROTATION_GRACE)
   return { ...(await issueTokens(sub, user.role)), userId: sub, role: user.role }
 }
 
@@ -99,24 +101,19 @@ export async function revokeTokens(access: string | undefined, refresh: string |
   const claims = await verifyAccess(access)
   if (claims) {
     const ttl = claims.exp - Math.floor(Date.now() / 1000)
-    if (ttl > 0) await redis.set(`blacklist:${claims.jti}`, '1', 'EX', ttl)
+    if (ttl > 0) await kv.set(`blacklist:${claims.jti}`, '1', ttl)
   }
   if (refresh) {
     try {
       const { payload } = await jwtVerify(refresh, env.refreshSecret, { algorithms: ['HS256'] })
-      await redis.del(`refresh:${payload.sub}:${payload.jti}`)
+      if (payload.sub && payload.jti) await kv.del(refreshKey(payload.sub, payload.jti))
     } catch { /* already invalid */ }
   }
 }
 
 /** Logout everywhere: every refresh token goes, and access tokens issued before now stop working. */
 export async function revokeAllSessions(userId: string) {
-  let cursor = '0'
-  do {
-    const [next, keys] = await redis.scan(cursor, 'MATCH', `refresh:${userId}:*`, 'COUNT', 200)
-    if (keys.length) await redis.del(...keys)
-    cursor = next
-  } while (cursor !== '0')
+  await kv.delGroup(`refresh:${userId}`)
   // Whole seconds, because JWT iat is in seconds: a token issued later this second is still accepted.
   await db.update(schema.users).set({ tokensValidAfter: new Date(Math.floor(Date.now() / 1000) * 1000) }).where(eq(schema.users.id, userId))
 }
@@ -147,20 +144,27 @@ const sha256 = (value: string) => createHash('sha256').update(value).digest('hex
 
 export async function createLinkToken(kind: LinkKind, value: string, ttlSeconds: number) {
   const token = randomBytes(32).toString('base64url')
-  await redis.set(`${kind}:${sha256(token)}`, value, 'EX', ttlSeconds)
+  const hash = sha256(token)
+  // Sign-up and reset links are keyed by user id: sending a new one cancels the previous link, so only the latest email works.
+  if (kind !== 'verify-email') {
+    const latest = `${kind}-latest:${value}`
+    const previous = await kv.get(latest)
+    if (previous) await kv.del(`${kind}:${previous}`)
+    await kv.set(latest, hash, ttlSeconds)
+  }
+  await kv.set(`${kind}:${hash}`, value, ttlSeconds)
   return token
 }
 
 /** Reads without using it up, so a page can say "this link has expired" before the member types a password. */
-export const peekLinkToken = (kind: LinkKind, token: string) => redis.get(`${kind}:${sha256(token)}`)
-export const consumeLinkToken = (kind: LinkKind, token: string) => redis.getdel(`${kind}:${sha256(token)}`)
+export const peekLinkToken = (kind: LinkKind, token: string) => kv.get(`${kind}:${sha256(token)}`)
+export const consumeLinkToken = (kind: LinkKind, token: string) => kv.getdel(`${kind}:${sha256(token)}`)
 
 /** Fixed-window counter. Returns the seconds to wait when the limit is reached. */
 export async function rateLimit(key: string, max: number, windowSeconds: number): Promise<{ ok: true } | { ok: false; retryAfter: number }> {
-  const count = await redis.incr(key)
-  if (count === 1) await redis.expire(key, windowSeconds)
+  const { count, expiresAt } = await kv.incr(key, windowSeconds)
   if (count <= max) return { ok: true }
-  return { ok: false, retryAfter: Math.max(1, await redis.ttl(key)) }
+  return { ok: false, retryAfter: Math.max(1, expiresAt - Math.floor(Date.now() / 1000)) }
 }
 
-export const clearRateLimit = (key: string) => redis.del(key)
+export const clearRateLimit = (key: string) => kv.del(key)

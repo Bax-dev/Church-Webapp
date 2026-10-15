@@ -1,10 +1,10 @@
 import { AnnouncementEditor } from '@/components/portal/announcement-editor'
 import { Panel, PortalHeading } from '@/components/portal/ui'
-import { metadataFor } from '@/config/meta'
 import { routes } from '@/config/routes'
 import { getAnnouncement } from '@/lib/server/settings'
+import { pageMetadata } from '@/lib/server/metadata'
 
-export const metadata = metadataFor(routes.adminAnnouncements)
+export const generateMetadata = pageMetadata(routes.adminAnnouncements)
 
 export default async function AnnouncementsPage() {
   return (

@@ -8,8 +8,9 @@ export type Errors<K extends string = string> = Partial<Record<K, string>>
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const PHONE = /^\+?\d{7,15}$/
 
-export function email(value: string) {
-  if (!value.trim()) return 'Enter your email address.'
+/** `label` names whose address it is, for forms where an admin types someone else's. */
+export function email(value: string, label = 'your email address') {
+  if (!value.trim()) return `Enter ${label}.`
   if (!EMAIL.test(value.trim())) return 'Enter a valid email address, like name@example.com.'
   return undefined
 }

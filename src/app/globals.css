@@ -54,6 +54,7 @@ a { color: inherit; }
 .nav-links a { font-size: 13px; text-decoration: none; color: #29466e; transition: color .2s ease; }
 .nav-links a:hover { color: #1459a8; }
 .nav-links a[aria-current="page"] { color: #1459a8; font-weight: 700; }
+.nav-links .nav-account { display: none; }
 .nav-signout { padding: 0; border: 0; background: none; font: inherit; font-size: 13px; color: #29466e; cursor: pointer; }
 .nav-signout:hover { color: #1459a8; }
 .nav-cta, .button-primary, .button-secondary, .button-light {
@@ -450,6 +451,35 @@ a.table-name:hover { text-decoration: underline; }
 .gallery-tile:hover img { transform: scale(1.04); }
 .gallery-tile.tile-1 { grid-column: span 2; grid-row: span 2; border-radius: 180px 180px 0 0; }
 .image-note { margin: 16px 0 0; color: #5d7391; font-size: 11px; }
+.gallery-link { margin-top: 28px; }
+
+.gallery-page { background: #fff; }
+.album-nav { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 56px; }
+.album-nav a { padding: 9px 16px; border: 1px solid #c9d9ec; border-radius: 999px; color: #29466e; font-size: 13px; text-decoration: none; transition: background .2s ease, color .2s ease; }
+.album-nav a:hover { background: #164b91; border-color: #164b91; color: #fff; }
+.album { scroll-margin-top: 96px; }
+.album + .album { margin-top: 72px; }
+.album-head { max-width: 640px; margin-bottom: 26px; }
+.album-head h2 { margin: 0; font-family: var(--app-font-serif); font-size: clamp(32px, 3.6vw, 44px); font-weight: 400; line-height: 1.05; letter-spacing: -.04em; color: #173b70; }
+.album-head p { margin: 12px 0 0; color: #4c6380; font-size: 15px; line-height: 1.7; }
+.album-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin: 0; padding: 0; list-style: none; }
+.album-photo { display: block; width: 100%; aspect-ratio: 4 / 3; padding: 0; border: 0; overflow: hidden; background: #d7e5f6; cursor: zoom-in; }
+.album-photo img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s ease; }
+.album-photo:hover img, .album-photo:focus-visible img { transform: scale(1.04); }
+.album-caption { display: block; margin-top: 10px; color: #4c6380; font-size: 13px; line-height: 1.5; }
+
+.lightbox { width: 100vw; max-width: 100vw; height: 100dvh; max-height: 100dvh; margin: 0; padding: 0; border: 0; background: rgba(10, 30, 60, .94); color: #fff; }
+.lightbox[open] { display: grid; place-items: center; }
+.lightbox::backdrop { background: rgba(10, 30, 60, .6); }
+.lightbox figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 14px; max-width: min(1100px, 100vw - 140px); }
+.lightbox-frame img { display: block; max-width: 100%; max-height: calc(100dvh - 160px); width: auto; height: auto; object-fit: contain; }
+.lightbox figcaption { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; font-size: 14px; }
+.lightbox figcaption .eyebrow { color: #c9ddf5; }
+.lightbox button { position: absolute; display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border: 1px solid rgba(255,255,255,.35); border-radius: 50%; background: rgba(255,255,255,.08); color: #fff; cursor: pointer; }
+.lightbox button:hover { background: rgba(255,255,255,.2); }
+.lightbox-close { top: 20px; right: 20px; }
+.lightbox-prev { left: 20px; top: 50%; transform: translateY(-50%); }
+.lightbox-next { right: 20px; top: 50%; transform: translateY(-50%); }
 
 .story { background: #fff; }
 
@@ -598,7 +628,11 @@ a.table-name:hover { text-decoration: underline; }
 @media (prefers-reduced-motion: reduce) {
   *, *:before, *:after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+@media (max-width: 1100px) {
+  .nav-links { gap: 20px; }
+}
 @media (max-width: 900px) {
+  .album-grid { grid-template-columns: 1fr 1fr; }
   .nav-links { gap: 19px; }
   .hero-grid { gap: 25px; }
   .hero-art { min-height: 435px; }
@@ -631,12 +665,17 @@ a.table-name:hover { text-decoration: underline; }
 }
 @media (max-width: 700px) {
   .announcement { padding: 36px 22px 24px; }
+  .album-grid { gap: 10px; }
+  .album-caption { font-size: 12px; }
+  .lightbox figure { max-width: calc(100vw - 32px); }
+  .lightbox-prev, .lightbox-next { top: auto; bottom: 20px; transform: none; }
   .announcement h2 { font-size: 25px; }
   .announcement-buttons { flex-direction: column; align-self: stretch; }
   .container { width: min(100% - 40px, 520px); }
   .nav-inner { height: 68px; }
   .menu-toggle { display: inline-flex; }
   .nav-cta { display: none; }
+  .nav-links .nav-account { display: block; font-weight: 700; color: #164b91; }
   .nav-links { display: none; position: absolute; left: 0; right: 0; top: 68px; padding: 12px 20px 20px; background: #fff; border-bottom: 1px solid #dbe6f3; flex-direction: column; align-items: stretch; gap: 0; }
   .nav-links.open { display: flex; }
   .nav-links a { padding: 13px 4px; border-bottom: 1px solid #e0eaf5; font-size: 14px; }
@@ -740,4 +779,211 @@ a.table-name:hover { text-decoration: underline; }
 @media (max-width: 700px) {
   /* Stacked layout: keep the field below the headline. */
   .hero-scene { -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0,0,0,.2) 45%, #000 70%); mask-image: linear-gradient(180deg, transparent 0%, rgba(0,0,0,.2) 45%, #000 70%); }
+}
+
+/* Admin → Site content */
+.content-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 18px; }
+.content-tabs a { padding: 8px 13px; border: 1px solid #d3dfed; border-radius: 999px; background: #fff; color: #29466e; font-size: 12px; font-weight: 600; text-decoration: none; }
+.content-tabs a:hover { border-color: #164b91; }
+.content-tabs a[aria-current="page"] { background: #164b91; border-color: #164b91; color: #fff; }
+.content-editor { display: flex; flex-direction: column; gap: 0; }
+.content-editor > .field-hint { margin: 0 0 18px; line-height: 1.7; }
+.content-editor code { padding: 1px 5px; border-radius: 5px; background: #e7f0fb; color: #173b70; font-size: 11px; }
+.content-hint { margin: 0 0 8px; }
+.content-fields { display: grid; gap: 16px; }
+.content-fields textarea, .content-list textarea { width: 100%; resize: vertical; font: inherit; font-size: 13px; line-height: 1.6; }
+.content-image, .content-list { min-width: 0; margin: 0; padding: 14px; border: 1px solid #d3dfed; border-radius: 12px; display: grid; gap: 12px; }
+.content-image legend, .content-list legend { padding: 0 6px; color: #173b70; font-size: 12px; font-weight: 700; }
+.content-image-row { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 16px; align-items: start; }
+.content-image-preview { width: 180px; height: 120px; object-fit: cover; border-radius: 10px; background: #e7f0fb; border: 1px solid #d3dfed; }
+.content-image-controls { display: grid; gap: 10px; justify-items: start; }
+.content-image-controls .field { width: 100%; }
+.content-list ol { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.content-string { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: end; }
+.content-item { padding: 14px; border-radius: 10px; background: #f6f9fd; border: 1px solid #e0eaf5; display: grid; gap: 12px; }
+.content-item-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; color: #173b70; font-size: 13px; }
+.content-item-actions { display: flex; gap: 6px; }
+.content-icon-field { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: end; }
+.content-list > .button-secondary { justify-self: start; cursor: pointer; }
+.content-savebar { position: sticky; bottom: 12px; z-index: 5; display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; padding: 12px 16px; border: 1px solid #d3dfed; border-radius: 14px; background: rgba(255, 255, 255, .96); box-shadow: 0 10px 30px rgba(22, 75, 145, .12); }
+.content-savebar .form-result { flex: 1; }
+.content-savebar .form-actions { margin-left: auto; align-items: center; }
+@media (max-width: 700px) {
+  .content-image-row { grid-template-columns: 1fr; }
+  .content-image-preview { width: 100%; height: 160px; }
+}
+.pastors-link { margin-top: 28px; }
+.content-toggle { display: grid; gap: 4px; padding: 12px 14px; border-radius: 10px; background: #f1f6fc; border: 1px solid #d3dfed; }
+.content-toggle .field { margin: 0; }
+
+/* Prayer programme: home band, /prayer page, admin */
+.prayer-band, .prayer-hero { background: linear-gradient(135deg, #0f2f63 0%, #164b91 55%, #1d63b8 100%); color: #fff; }
+.prayer-hero { padding: 72px 0; }
+.prayer-band-inner { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 56px; align-items: center; }
+.prayer-band-inner.no-flyer { grid-template-columns: minmax(0, 720px); }
+.prayer-flyer img { display: block; width: 100%; height: auto; border-radius: 18px; box-shadow: 0 24px 60px rgba(4, 18, 45, .45); }
+.prayer-band-copy { display: grid; gap: 14px; justify-items: start; }
+.prayer-band-copy h1, .prayer-band-copy h2 { margin: 0; color: #fff; font-family: var(--app-font-serif); font-weight: 500; font-size: clamp(34px, 5vw, 56px); line-height: 1.05; }
+.prayer-host { margin: 0; color: #ffe066; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; font-size: 13px; }
+.prayer-tagline { margin: 0; color: #dbe7f8; font-size: 17px; line-height: 1.6; max-width: 520px; }
+.prayer-schedule { margin: 0; color: #fff; font-weight: 700; }
+.prayer-note { margin: 0; color: #b9cdea; font-size: 13px; font-style: italic; }
+.prayer-live { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; background: rgba(255, 255, 255, .14); color: #fff; font-size: 12px; font-weight: 700; }
+.prayer-live.is-live { background: #e5383b; animation: prayer-pulse 2s ease-in-out infinite; }
+@keyframes prayer-pulse { 50% { box-shadow: 0 0 0 8px rgba(229, 56, 59, .2); } }
+@media (prefers-reduced-motion: reduce) { .prayer-live.is-live { animation: none; } }
+.prayer-tonight { display: grid; gap: 3px; padding: 14px 16px; border-left: 3px solid #ffe066; background: rgba(255, 255, 255, .08); border-radius: 0 12px 12px 0; max-width: 560px; }
+.prayer-tonight small { color: #b9cdea; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+.prayer-tonight strong { color: #fff; font-size: 16px; }
+.prayer-tonight span { color: #dbe7f8; font-size: 13px; }
+.prayer-join { display: grid; gap: 8px; }
+.prayer-join-buttons { display: flex; flex-wrap: wrap; gap: 10px; }
+.prayer-band .button-secondary, .prayer-hero .button-secondary { background: transparent; color: #fff; border-color: rgba(255, 255, 255, .55); }
+.prayer-band .button-primary, .prayer-hero .button-primary { background: #ffe066; color: #10284f; }
+.prayer-band .pathway-link { color: #ffe066; }
+.prayer-zoom-details { margin: 0; color: #dbe7f8; font-size: 13px; }
+.prayer-zoom-details strong { color: #fff; letter-spacing: .04em; }
+.prayer-watch { padding: 48px 0 0; }
+.prayer-video { position: relative; aspect-ratio: 16 / 9; max-width: 900px; margin: 0 auto; border-radius: 16px; overflow: hidden; background: #0b1d3a; }
+.prayer-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.prayer-guide-section { padding: 64px 0 96px; }
+.prayer-guide-layout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 48px; align-items: start; }
+.prayer-guide { display: grid; gap: 30px; max-width: 760px; }
+.prayer-guide-head h2 { margin: 6px 0 8px; color: #173b70; font-family: var(--app-font-serif); font-weight: 500; font-size: clamp(26px, 3.4vw, 38px); line-height: 1.15; }
+.prayer-guide-text { display: inline-flex; gap: 6px; align-items: center; margin: 0; color: #315c91; font-weight: 700; }
+.prayer-verse { margin: 0; padding: 22px 26px; border-radius: 16px; background: #edf4fc; border-left: 4px solid #164b91; }
+.prayer-verse p { margin: 0 0 8px; color: #173b70; font-family: var(--app-font-serif); font-size: 21px; line-height: 1.5; }
+.prayer-verse cite { color: #315c91; font-style: normal; font-weight: 700; font-size: 13px; }
+.prayer-block h3 { margin: 0 0 12px; color: #173b70; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; }
+.prayer-block p { margin: 0 0 14px; color: #33475f; line-height: 1.8; }
+.prayer-bullets { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: #33475f; line-height: 1.7; }
+.prayer-points { list-style: none; margin: 0; padding: 0; display: grid; gap: 22px; }
+.prayer-points h4 { display: flex; gap: 12px; align-items: baseline; margin: 0 0 10px; color: #173b70; font-size: 15px; line-height: 1.4; }
+.prayer-points h4 span { flex: 0 0 auto; display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: #164b91; color: #fff; font-size: 12px; }
+.prayer-points .prayer-bullets { padding-left: 60px; }
+.prayer-declarations { padding: 22px 26px; border-radius: 16px; background: #fff8dc; }
+.prayer-archive { position: sticky; top: 96px; padding: 20px; border: 1px solid #d3dfed; border-radius: 16px; background: #fff; }
+.prayer-archive h2 { margin: 0 0 12px; color: #173b70; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
+.prayer-archive ul { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 4px; max-height: 60vh; overflow: auto; }
+.prayer-archive a { display: grid; gap: 2px; padding: 8px 10px; border-radius: 10px; color: #29466e; font-size: 13px; text-decoration: none; }
+.prayer-archive a:hover { background: #edf4fc; }
+.prayer-archive a[aria-current="page"] { background: #164b91; color: #fff; }
+.prayer-archive small { font-size: 11px; opacity: .75; }
+.prayer-empty h2 { color: #173b70; font-family: var(--app-font-serif); font-weight: 500; }
+.prayer-admin-note { margin: 18px 0 0; }
+.prayer-admin-note a { color: inherit; font-weight: 700; }
+@media (max-width: 900px) {
+  .prayer-band-inner, .prayer-guide-layout { grid-template-columns: 1fr; gap: 32px; }
+  .prayer-flyer { max-width: 440px; }
+  .prayer-archive { position: static; }
+}
+@media (max-width: 700px) {
+  .prayer-hero { padding: 48px 0; }
+  .prayer-points .prayer-bullets { padding-left: 20px; }
+}
+
+/* Prayer admin */
+.prayer-toggle { display: flex; gap: 14px; align-items: center; padding: 14px 16px; border: 1px solid #d3dfed; border-radius: 14px; cursor: pointer; }
+.prayer-toggle.is-on { border-color: #1d6b3c; background: #f0faf3; }
+.prayer-toggle input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.prayer-toggle-track { flex: 0 0 auto; position: relative; width: 44px; height: 24px; border-radius: 999px; background: #c5d3e5; transition: background .2s; }
+.prayer-toggle-track::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 1px 3px rgba(0, 0, 0, .2); }
+.prayer-toggle.is-on .prayer-toggle-track { background: #1d6b3c; }
+.prayer-toggle.is-on .prayer-toggle-track::after { transform: translateX(20px); }
+.prayer-toggle input:focus-visible + .prayer-toggle-track { outline: 2px solid #164b91; outline-offset: 2px; }
+.prayer-toggle strong { display: block; color: #173b70; font-size: 14px; }
+.prayer-toggle small { display: block; color: #5d7391; font-size: 12px; }
+.prayer-days { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.prayer-day { padding: 7px 12px; border: 1px solid #d3dfed; border-radius: 999px; font-size: 12px; font-weight: 700; color: #29466e; cursor: pointer; }
+.prayer-day.is-on { background: #164b91; border-color: #164b91; color: #fff; }
+.prayer-day input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.prayer-day:focus-within { outline: 2px solid #164b91; outline-offset: 2px; }
+.prayer-flyer-edit { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 18px; align-items: start; }
+.prayer-flyer-edit > img, .prayer-flyer-empty { width: 160px; height: 160px; object-fit: cover; border-radius: 12px; border: 1px solid #d3dfed; background: #edf4fc; }
+.prayer-flyer-empty { display: grid; place-items: center; color: #5d7391; font-size: 12px; }
+.prayer-links { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.prayer-link-card { display: grid; gap: 12px; align-content: start; padding: 14px; border: 1px solid #e0eaf5; border-radius: 14px; background: #f6f9fd; }
+.prayer-paste { display: grid; gap: 10px; padding: 16px; border: 1px dashed #9fb8d8; border-radius: 14px; background: #f6f9fd; }
+.prayer-editor textarea, .prayer-paste textarea { width: 100%; resize: vertical; font: inherit; font-size: 13px; line-height: 1.6; }
+.prayer-sections ol { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 12px; }
+.prayer-editor .back-link { border: 0; background: none; padding: 0; cursor: pointer; justify-self: start; }
+@media (max-width: 700px) {
+  .prayer-links, .prayer-flyer-edit { grid-template-columns: 1fr; }
+}
+
+/* ── Site widgets: glass top banner + floating WhatsApp button (/admin/settings) ── */
+.form-stack fieldset > .prayer-toggle { margin: 10px 0 16px; }
+
+.glass-banner {
+  position: relative; z-index: 31; overflow: hidden; isolation: isolate;
+  background: linear-gradient(110deg, hsl(var(--brand-deep)), hsl(var(--brand)) 55%, #2f7fd6);
+  color: #fff;
+}
+.glass-banner-orb { position: absolute; z-index: -2; border-radius: 50%; filter: blur(18px); opacity: .7; pointer-events: none; }
+.glass-banner-orb.one { width: 220px; height: 120px; top: -50px; left: 8%; background: #6fb3ff; animation: glass-drift 14s ease-in-out infinite alternate; }
+.glass-banner-orb.two { width: 260px; height: 140px; bottom: -80px; right: 12%; background: #f2c14e; opacity: .45; animation: glass-drift 18s ease-in-out infinite alternate-reverse; }
+.glass-banner::before {
+  content: ''; position: absolute; inset: 0; z-index: -1;
+  background: rgba(255, 255, 255, .12); backdrop-filter: blur(14px) saturate(160%); -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border-bottom: 1px solid rgba(255, 255, 255, .28); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25);
+}
+.glass-banner-inner { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 42px; padding-block: 8px; }
+.glass-banner p { margin: 0; flex: 1; text-align: center; font-size: 13px; font-weight: 500; line-height: 1.45; text-shadow: 0 1px 2px rgba(0, 0, 0, .15); }
+.glass-banner-dot { display: inline-block; width: 7px; height: 7px; margin-right: 10px; vertical-align: 1px; border-radius: 50%; background: #7dffb0; box-shadow: 0 0 0 0 rgba(125, 255, 176, .7); animation: glass-pulse 2.2s infinite; }
+.glass-banner-link {
+  display: inline-flex; align-items: center; gap: 4px; margin-left: 12px; padding: 3px 11px; border-radius: 999px;
+  background: rgba(255, 255, 255, .18); border: 1px solid rgba(255, 255, 255, .35); color: #fff; font-weight: 700; font-size: 12px; text-decoration: none;
+  transition: background .2s;
+}
+.glass-banner-link:hover { background: rgba(255, 255, 255, .3); }
+.glass-banner-close {
+  flex: 0 0 auto; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, .3); background: rgba(255, 255, 255, .12); color: #fff; cursor: pointer;
+}
+.glass-banner-close:hover { background: rgba(255, 255, 255, .26); }
+.glass-banner :focus-visible { outline-color: #fff; outline-offset: 2px; }
+@keyframes glass-drift { from { transform: translateX(0); } to { transform: translateX(160px); } }
+@keyframes glass-pulse { 70% { box-shadow: 0 0 0 8px rgba(125, 255, 176, 0); } 100% { box-shadow: 0 0 0 0 rgba(125, 255, 176, 0); } }
+
+.whatsapp-widget { position: fixed; z-index: 40; bottom: 24px; display: flex; flex-direction: column; gap: 12px; }
+.whatsapp-widget.side-right { right: 24px; align-items: flex-end; }
+.whatsapp-widget.side-left { left: 24px; align-items: flex-start; }
+.whatsapp-toggle {
+  display: grid; place-items: center; width: 58px; height: 58px; padding: 0; border: 0; border-radius: 50%; cursor: pointer;
+  background: #25d366; color: #fff; box-shadow: 0 10px 28px rgba(18, 140, 70, .38), 0 2px 6px rgba(0, 0, 0, .12);
+  transition: transform .2s ease, background .2s ease;
+}
+.whatsapp-toggle:hover { transform: scale(1.06); background: #1fbd5a; }
+.whatsapp-widget:not(.is-open) .whatsapp-toggle { animation: whatsapp-ring 3.2s ease-out 1.5s infinite; }
+.whatsapp-card {
+  width: min(320px, calc(100vw - 48px)); padding: 18px; border-radius: 18px;
+  background: rgba(255, 255, 255, .82); backdrop-filter: blur(18px) saturate(160%); -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, .7); box-shadow: 0 20px 50px rgba(16, 47, 93, .22);
+  animation: whatsapp-in .22s ease-out;
+}
+.whatsapp-card[hidden] { display: none; }
+.whatsapp-card-head { display: flex; gap: 12px; align-items: center; }
+.whatsapp-card-head strong { display: block; color: #173b70; font-size: 15px; }
+.whatsapp-card-head small { display: block; color: #5d7391; font-size: 12px; }
+.whatsapp-card-icon { display: grid; place-items: center; flex: 0 0 auto; width: 38px; height: 38px; border-radius: 50%; background: #25d366; color: #fff; }
+.whatsapp-card-bubble { position: relative; margin: 14px 0; padding: 10px 12px; border-radius: 4px 12px 12px 12px; background: #dcf8c6; color: #1f3b2a; font-size: 13px; line-height: 1.45; }
+.whatsapp-card-button {
+  display: flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 16px; border-radius: 999px;
+  background: #25d366; color: #fff; font-weight: 700; font-size: 14px; text-decoration: none; transition: background .2s;
+}
+.whatsapp-card-head + .whatsapp-card-button { margin-top: 14px; }
+.whatsapp-card-button:hover { background: #1fbd5a; }
+@keyframes whatsapp-in { from { opacity: 0; transform: translateY(8px) scale(.97); } to { opacity: 1; transform: none; } }
+@keyframes whatsapp-ring { 0% { box-shadow: 0 10px 28px rgba(18, 140, 70, .38), 0 0 0 0 rgba(37, 211, 102, .5); } 60%, 100% { box-shadow: 0 10px 28px rgba(18, 140, 70, .38), 0 0 0 16px rgba(37, 211, 102, 0); } }
+
+@media (max-width: 700px) {
+  .glass-banner p { text-align: left; font-size: 12px; }
+  .glass-banner-link { margin: 6px 0 0; }
+  .whatsapp-widget { bottom: 16px; }
+  .whatsapp-widget.side-right { right: 16px; }
+  .whatsapp-widget.side-left { left: 16px; }
+  .whatsapp-toggle { width: 52px; height: 52px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .glass-banner-orb, .glass-banner-dot, .whatsapp-widget .whatsapp-toggle, .whatsapp-card { animation: none; }
 }

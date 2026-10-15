@@ -20,6 +20,6 @@ export const POST = route(async (request) => {
   if (user.status !== 'ACTIVE') throw new HttpError(422, 'Please check the highlighted fields.', { email: 'That member’s account is not active yet. Approve it first.' })
   if (user.role === 'SUPER_ADMIN') throw new HttpError(422, 'Please check the highlighted fields.', { email: 'That member is already a Super Admin.' })
   const [updated] = await db.update(schema.users).set({ role: 'SUPER_ADMIN' }).where(eq(schema.users.id, user.id)).returning()
-  await audit({ actor: admin, target: updated, action: 'admin.grant', detail: 'Role MEMBER → SUPER_ADMIN', oldValue: { role: 'MEMBER' }, newValue: { role: 'SUPER_ADMIN' }, ip: clientIp(request) })
+  await audit({ actor: admin, target: updated, action: 'admin.grant', detail: 'Role Member → Super Admin', oldValue: { role: 'MEMBER' }, newValue: { role: 'SUPER_ADMIN' }, ip: clientIp(request) })
   return ok(toMember(updated), { status: 201 })
 })

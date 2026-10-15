@@ -5,6 +5,7 @@ import { ArrowDown, ArrowUp, Plus, Save, Trash2, Upload } from 'lucide-react'
 
 import { Field, FormResult } from '@/components/portal/fields'
 import { Avatar } from '@/components/portal/ui'
+import { useLeaveGuard } from '@/components/portal/use-leave-guard'
 import { MAX_PASTORS, type Pastor } from '@/config/pastors'
 import { routes } from '@/config/routes'
 import { ApiError, api } from '@/lib/api-client'
@@ -22,13 +23,20 @@ export function PastorEditor({ initial }: { initial: Pastor[] }) {
   const [saving, setSaving] = useState(false)
   const [result, setResult] = useState<{ ok: boolean; text: string }>()
   const [dirty, setDirty] = useState(false)
+  // How many pastors the live site has; the About page hides the section (and its #pastors anchor) at zero.
+  const [savedCount, setSavedCount] = useState(initial.length)
+  useLeaveGuard(dirty)
 
   const change = (next: Pastor[]) => {
     setPastors(next)
     setDirty(true)
     setResult(undefined)
   }
-  const update = (id: string, patch: Partial<Pastor>) => change(pastors.map((p) => (p.id === id ? { ...p, ...patch } : p)))
+  const update = (id: string, patch: Partial<Pastor>) => {
+    change(pastors.map((p) => (p.id === id ? { ...p, ...patch } : p)))
+    // Editing a field retires its old message; Save checks everything again.
+    for (const key of Object.keys(patch)) if (errors[id]?.[key as keyof Errors[string]]) fieldError(id, key as keyof Errors[string], undefined)
+  }
   const move = (index: number, by: -1 | 1) => {
     const next = [...pastors]
     ;[next[index], next[index + by]] = [next[index + by], next[index]]
@@ -75,6 +83,7 @@ export function PastorEditor({ initial }: { initial: Pastor[] }) {
     try {
       const saved = await api<Pastor[]>('/api/admin/pastors', { method: 'PUT', body: { pastors } })
       setPastors(saved)
+      setSavedCount(saved.length)
       setDirty(false)
       setResult({ ok: true, text: saved.length ? 'Saved. The About page shows the new list now.' : 'Saved. The pastors section is hidden until you add someone.' })
     } catch (error) {
@@ -133,7 +142,7 @@ export function PastorEditor({ initial }: { initial: Pastor[] }) {
           <Plus size={15} /> Add a pastor
         </button>
         <button type="button" className="button-primary" onClick={save} disabled={saving || !dirty}><Save size={15} /> {saving ? 'Saving…' : 'Save changes'}</button>
-        <a className="pathway-link" href={`${routes.about.path}/#pastors`} target="_blank" rel="noreferrer">View on the About page</a>
+        <a className="pathway-link" href={`${routes.about.path}/${savedCount ? '#pastors' : ''}`} target="_blank" rel="noreferrer">View on the About page</a>
       </div>
       {dirty && !result && <p className="field-hint">You have unsaved changes. Nothing changes on the site until you save.</p>}
       {result && <FormResult error={!result.ok}>{result.text}</FormResult>}

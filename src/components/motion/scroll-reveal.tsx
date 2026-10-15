@@ -8,12 +8,12 @@ import { animate, inView, stagger } from 'framer-motion'
 const SINGLES = [
   '.section-head', '.why-aside', '.values-inner > div:first-child', '.story-copy', '.story-photo',
   '.experience-art', '.experience-copy', '.first-sunday-photo', '.access-card', '.getting-here-card',
-  '.scripture blockquote', '.member-status-inner', '.pathway-top > .button-secondary', '.image-note',
+  '.scripture blockquote', '.member-status-inner', '.pathway-top > .button-secondary', '.image-note', '.album-head', '.album-nav',
 ].join(', ')
 
 /** Lists and grids whose children arrive one after another. */
 const GROUPS = [
-  '.why-list', '.values-words', '.pathways-grid', '.ministry-grid', '.step-grid', '.gallery-grid',
+  '.why-list', '.values-words', '.pathways-grid', '.ministry-grid', '.step-grid', '.gallery-grid', '.album-grid',
   '.member-feature-grid', '.pastor-grid', '.moment-list', '.story-points', '.experience-copy .feature-list', '.faq-list',
 ].join(', ')
 

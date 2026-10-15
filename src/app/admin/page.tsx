@@ -2,12 +2,12 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 
 import { BarList, Panel, PortalHeading, StatTile, StatusBadge } from '@/components/portal/ui'
-import { metadataFor } from '@/config/meta'
 import { formatDate } from '@/config/portal'
 import { routes } from '@/config/routes'
 import { adminStats } from '@/lib/server/members'
+import { pageMetadata } from '@/lib/server/metadata'
 
-export const metadata = metadataFor(routes.admin)
+export const generateMetadata = pageMetadata(routes.admin)
 
 export default async function AdminDashboard() {
   const s = await adminStats()

@@ -2,7 +2,6 @@
 import ExcelJS from 'exceljs'
 import PDFDocument from 'pdfkit'
 
-import { SITE } from '@/config/site'
 import { formatDate, lookupName, maritalStatusLabels, statusLabels, type Lookup, type Member } from '@/config/portal'
 
 const columns = [
@@ -29,9 +28,9 @@ export function toCsv(members: Member[], departments: Lookup[], districts: Looku
   return `﻿${lines.join('\r\n')}\r\n`
 }
 
-export async function toXlsx(members: Member[], departments: Lookup[], districts: Lookup[]) {
+export async function toXlsx(members: Member[], departments: Lookup[], districts: Lookup[], church: string) {
   const book = new ExcelJS.Workbook()
-  book.creator = SITE.name
+  book.creator = church
   const sheet = book.addWorksheet('Members', { views: [{ state: 'frozen', ySplit: 1 }] })
   sheet.columns = columns.map(([header, width]) => ({ header, width }))
   sheet.getRow(1).font = { bold: true }
@@ -40,7 +39,7 @@ export async function toXlsx(members: Member[], departments: Lookup[], districts
   return Buffer.from(await book.xlsx.writeBuffer())
 }
 
-export function toPdf(members: Member[], departments: Lookup[], districts: Lookup[], filterText: string) {
+export function toPdf(members: Member[], departments: Lookup[], districts: Lookup[], filterText: string, church: string) {
   return new Promise<Buffer>((resolve, reject) => {
     const doc = new PDFDocument({ size: 'A4', layout: 'landscape', margin: 36 })
     const chunks: Buffer[] = []
@@ -48,7 +47,7 @@ export function toPdf(members: Member[], departments: Lookup[], districts: Looku
     doc.on('end', () => resolve(Buffer.concat(chunks)))
     doc.on('error', reject)
 
-    doc.font('Helvetica-Bold').fontSize(15).text(`${SITE.name} — member list`)
+    doc.font('Helvetica-Bold').fontSize(15).text(`${church} — member list`)
     doc.font('Helvetica').fontSize(9).fillColor('#555')
       .text(`${members.length} ${members.length === 1 ? 'member' : 'members'} · ${filterText} · exported ${formatDate(new Date().toISOString())}`)
     doc.moveDown(0.8).fillColor('#000')

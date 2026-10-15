@@ -1,0 +1,27 @@
+# Checks every pull request and push: types and a production build.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - run: yarn typecheck
+      - run: yarn build
+        env:
+          # The build does not connect to these; production values are only set at deploy time.
+          DATABASE_URL: postgres://build:build@localhost:5432/build

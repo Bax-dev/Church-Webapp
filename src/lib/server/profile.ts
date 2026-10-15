@@ -2,6 +2,7 @@
 import { and, eq, ne } from 'drizzle-orm'
 import type { z } from 'zod'
 
+import { statusLabels } from '@/config/portal'
 import { HttpError } from '@/lib/server/api'
 import { audit, diff } from '@/lib/server/audit'
 import { createLinkToken, revokeAllSessions } from '@/lib/server/auth'
@@ -58,7 +59,7 @@ export async function updateProfile({ actor, target, changes, ip, byAdmin }: { a
   const action = update.status && update.status !== target.status
     ? { ACTIVE: target.status === 'PENDING' ? 'member.approve' : 'member.reactivate', INACTIVE: 'member.deactivate', PENDING: 'member.update' }[update.status]
     : byAdmin ? 'member.update' : 'profile.update'
-  const detail = update.status && change.keys.length === 1 ? `Status ${target.status} → ${update.status}` : change.detail
+  const detail = update.status && change.keys.length === 1 ? `Status ${statusLabels[target.status]} → ${statusLabels[update.status]}` : change.detail
   await audit({ actor, target: updated, action, detail, oldValue: change.oldValue, newValue: change.newValue, ip })
   await invalidateStats()
   return { member: updated, emailPending }

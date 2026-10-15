@@ -136,11 +136,13 @@ export function HeroScene() {
       }
       window.addEventListener('pointermove', onPointer, { passive: true })
 
-      const clock = new THREE.Clock()
+      // THREE.Timer replaces the deprecated Clock; it advances only when update() is called each frame.
+      const timer = new THREE.Timer()
       let frame = 0
       let visible = true
       const render = () => {
-        const t = clock.getElapsedTime()
+        timer.update()
+        const t = timer.getElapsed()
         material.uniforms.uTime.value = t
         rings.forEach((ring, index) => { ring.rotation.z = t * (0.04 + index * 0.015) * (index % 2 ? -1 : 1) })
         camera.position.x += (pointer.x * 1.4 - camera.position.x) * 0.03

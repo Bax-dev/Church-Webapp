@@ -1,11 +1,11 @@
 import { AdminManager } from '@/components/portal/admin-tools'
 import { Panel, PortalHeading } from '@/components/portal/ui'
-import { metadataFor } from '@/config/meta'
 import { routes } from '@/config/routes'
 import { listAdmins } from '@/lib/server/members'
 import { requireAdmin } from '@/lib/server/session'
+import { pageMetadata } from '@/lib/server/metadata'
 
-export const metadata = metadataFor(routes.adminUsers)
+export const generateMetadata = pageMetadata(routes.adminUsers)
 
 export default async function AdminUsersPage() {
   const [me, admins] = await Promise.all([requireAdmin(), listAdmins()])

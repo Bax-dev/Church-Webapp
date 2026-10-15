@@ -1,10 +1,10 @@
 import { AddMemberForm, MembersTable, ShareSignupLink } from '@/components/portal/admin-tools'
 import { Panel, PortalHeading } from '@/components/portal/ui'
-import { metadataFor } from '@/config/meta'
 import { routes } from '@/config/routes'
 import { listLookups } from '@/lib/server/members'
+import { pageMetadata } from '@/lib/server/metadata'
 
-export const metadata = metadataFor(routes.adminMembers)
+export const generateMetadata = pageMetadata(routes.adminMembers)
 
 export default async function AdminMembersPage() {
   const [departments, districts] = await Promise.all([listLookups('department'), listLookups('district')])

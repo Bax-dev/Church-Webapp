@@ -6,10 +6,10 @@ import { ArrowLeft } from 'lucide-react'
 import { MemberActions } from '@/components/portal/admin-tools'
 import { ProfileForm } from '@/components/portal/member-forms'
 import { Avatar, DefinitionList, Panel, PortalHeading } from '@/components/portal/ui'
-import { metadataFor } from '@/config/meta'
 import { formatDate, formatDateTime, fullName, initials, lookupName, maritalStatusLabels, roleLabels } from '@/config/portal'
 import { routes } from '@/config/routes'
 import { auditPage, getMember, listLookups } from '@/lib/server/members'
+import { pageMetadata } from '@/lib/server/metadata'
 import { requireAdmin } from '@/lib/server/session'
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ edit?: string }> }
@@ -17,7 +17,7 @@ type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ edit?: s
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   await requireAdmin()
   const member = await getMember((await params).id)
-  return metadataFor({ ...routes.adminMembers, title: member ? fullName(member) : routes.adminMembers.title })
+  return pageMetadata({ ...routes.adminMembers, title: member ? fullName(member) : routes.adminMembers.title })()
 }
 
 export default async function AdminMemberPage({ params, searchParams }: Props) {

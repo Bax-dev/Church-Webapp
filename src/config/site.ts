@@ -1,4 +1,8 @@
-/** Single source of truth for everything that describes the church to search engines and social scrapers. */
+/**
+ * Technical facts about the site (URL, locale, search keywords, social-card logo).
+ * The church's name, caption, description and address here are only the starting values: the live ones are
+ * edited under Admin → Site content → Church details (src/config/content.ts) and used everywhere pages render.
+ */
 export const SITE = {
   name: 'Presbyterian Centre',
   caption: 'Lekki, Lagos',
@@ -26,7 +30,3 @@ export const SITE = {
     country: 'NG',
   },
 } as const
-
-export function titleFor(title?: string) {
-  return title ? `${title} — ${SITE.name}` : SITE.defaultTitle
-}

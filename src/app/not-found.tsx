@@ -2,18 +2,20 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 
 import { PageIntro } from '@/components/site-shell'
-import { metadataFor } from '@/config/meta'
 import { routes } from '@/config/routes'
+import { getContent } from '@/lib/server/content'
+import { pageMetadata } from '@/lib/server/metadata'
 
 // Next.js marks this page noindex itself.
-export const metadata = metadataFor(routes.notFound)
+export const generateMetadata = pageMetadata(routes.notFound)
 
-export default function NotFound() {
+export default async function NotFound() {
+  const { page } = (await getContent()).notFound
   return (
     <>
-      <PageIntro eyebrow="Page not found" title="This page is not here." text="The page you were looking for may have moved." />
+      <PageIntro eyebrow={page.eyebrow} title={page.title} text={page.text} />
       <section className="section">
-        <div className="container"><Link className="button-primary" href="/">Back to home <ArrowRight size={16} /></Link></div>
+        <div className="container"><Link className="button-primary" href="/">{page.buttonLabel} <ArrowRight size={16} /></Link></div>
       </section>
     </>
   )

@@ -1,17 +1,15 @@
-/** Pastors for the About page: one ordered list in the settings table, photos on local disk next to member photos. */
+/** Pastors for the About page: one ordered list in the settings table, photos in object storage under pastors/. */
 import { randomBytes } from 'node:crypto'
-import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises'
-import path from 'node:path'
 import { eq } from 'drizzle-orm'
 
 import { PASTOR_PHOTO_ROUTE, parsePastors, type Pastor } from '@/config/pastors'
 import { db, schema } from '@/lib/server/db'
-import { env } from '@/lib/server/env'
 import { sniff } from '@/lib/server/photos'
+import { storage } from '@/lib/server/s3'
 
 const KEY = 'pastors'
 const MAX_BYTES = 2 * 1024 * 1024
-const dir = () => path.resolve(env.uploadDir, 'pastors')
+const key = (name: string) => `pastors/${name}`
 const FILE_NAME = /^[0-9a-f]{16}\.(jpg|png)$/
 
 export async function getPastors(): Promise<Pastor[]> {
@@ -28,9 +26,8 @@ export async function savePastorPhoto(file: File) {
   const bytes = new Uint8Array(await file.arrayBuffer())
   const kind = sniff(bytes)
   if (!kind) return { error: 'Choose a JPG or PNG image.' } as const
-  await mkdir(dir(), { recursive: true })
   const name = `${randomBytes(8).toString('hex')}.${kind.ext}`
-  await writeFile(path.join(dir(), name), bytes)
+  await storage.put(key(name), bytes, { contentType: kind.type })
   return { url: `${PASTOR_PHOTO_ROUTE}/${name}` } as const
 }
 
@@ -39,12 +36,12 @@ export async function deleteUnusedPastorPhotos(before: Pastor[], after: Pastor[]
   const kept = new Set(after.map((p) => p.photoUrl))
   for (const url of before.map((p) => p.photoUrl)) {
     const name = url && !kept.has(url) ? url.slice(PASTOR_PHOTO_ROUTE.length + 1) : undefined
-    if (name && FILE_NAME.test(name)) await unlink(path.join(dir(), name)).catch(() => {})
+    if (name && FILE_NAME.test(name)) await storage.delete(key(name)).catch(() => {})
   }
 }
 
 export async function readPastorPhoto(name: string) {
   if (!FILE_NAME.test(name)) return undefined
-  const bytes = await readFile(path.join(dir(), name)).catch(() => undefined)
+  const bytes = (await storage.get(key(name)))?.bytes
   return bytes && { bytes, type: name.endsWith('.png') ? 'image/png' : 'image/jpeg' }
 }

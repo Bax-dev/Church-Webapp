@@ -1,24 +1,20 @@
-import { FirstSunday, GettingHere } from '@/components/sections'
-import { CTA, PageIntro, Visit } from '@/components/site-shell'
-import { metadataFor } from '@/config/meta'
+import { Expect, FirstSunday, GettingHere } from '@/components/sections'
+import { CTA, PageIntro } from '@/components/site-shell'
 import { routes } from '@/config/routes'
-import { SITE } from '@/config/site'
+import { getContent } from '@/lib/server/content'
+import { pageMetadata } from '@/lib/server/metadata'
 
-export const metadata = metadataFor(routes.visit)
+export const generateMetadata = pageMetadata(routes.visit)
 
-export default function VisitPage() {
+export default async function VisitPage() {
+  const { visit, shared, site } = await getContent()
   return (
     <>
-      <PageIntro
-        image="choir"
-        eyebrow="Plan your visit"
-        title={<>Come as you are.<br /><em>You</em> are welcome.</>}
-        text={`Find us on the ${SITE.address.street}, ${SITE.address.locality}, ${SITE.address.region}.`}
-      />
-      <Visit />
-      <FirstSunday />
-      <GettingHere />
-      <CTA />
+      <PageIntro {...visit.intro} />
+      <Expect content={visit.expect} />
+      <FirstSunday content={visit.firstSunday} />
+      <GettingHere content={visit.gettingHere} site={site} />
+      <CTA content={shared.cta} />
     </>
   )
 }

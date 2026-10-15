@@ -1,13 +1,11 @@
-/** Profile photos on local disk (PRD M-09; storage is open question §18 Q5, so this is the simplest option). */
+/** Profile photos in object storage under photos/ (PRD M-09). */
 import { randomBytes } from 'node:crypto'
-import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises'
-import path from 'node:path'
 
-import { env } from '@/lib/server/env'
+import { storage } from '@/lib/server/s3'
 
 export const PHOTO_ROUTE = '/api/photos'
 const MAX_BYTES = 2 * 1024 * 1024
-const dir = () => path.resolve(env.uploadDir, 'photos')
+const key = (name: string) => `photos/${name}`
 
 /** Trusts the file's first bytes, not its name or the browser's content type. */
 export function sniff(bytes: Uint8Array) {
@@ -21,21 +19,20 @@ export async function savePhoto(userId: string, file: File) {
   const bytes = new Uint8Array(await file.arrayBuffer())
   const kind = sniff(bytes)
   if (!kind) return { error: 'Choose a JPG or PNG image.' } as const
-  await mkdir(dir(), { recursive: true })
   const name = `${userId}-${randomBytes(6).toString('hex')}.${kind.ext}`
-  await writeFile(path.join(dir(), name), bytes)
+  await storage.put(key(name), bytes, { contentType: kind.type })
   return { url: `${PHOTO_ROUTE}/${name}` } as const
 }
 
 export async function deletePhoto(url: string | null) {
   const name = url?.startsWith(`${PHOTO_ROUTE}/`) ? url.slice(PHOTO_ROUTE.length + 1) : undefined
-  if (name && /^[\w-]+\.(jpg|png)$/.test(name)) await unlink(path.join(dir(), name)).catch(() => {})
+  if (name && /^[\w-]+\.(jpg|png)$/.test(name)) await storage.delete(key(name)).catch(() => {})
 }
 
 /** File names are `{userId}-{random}.{ext}`, so the owner can be checked without a database lookup. */
 export async function readPhoto(name: string) {
   const match = /^([\w-]+)-[0-9a-f]{12}\.(jpg|png)$/.exec(name)
   if (!match) return undefined
-  const bytes = await readFile(path.join(dir(), name)).catch(() => undefined)
+  const bytes = (await storage.get(key(name)))?.bytes
   return bytes && { bytes, ownerId: match[1], type: match[2] === 'png' ? 'image/png' : 'image/jpeg' }
 }

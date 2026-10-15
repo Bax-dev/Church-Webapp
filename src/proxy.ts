@@ -7,6 +7,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
 import { routes } from '@/config/routes'
+import { userFromAccessToken } from '@/lib/server/api'
 import { ACCESS_COOKIE, REFRESH_COOKIE, clearSessionCookies, currentRole, rotateTokens, setSessionCookies, verifyAccess } from '@/lib/server/auth'
 
 const under = (path: string, prefix: string) => path === prefix || path.startsWith(`${prefix}/`)
@@ -26,13 +27,21 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  let claims: { role: string } | undefined = await verifyAccess(request.cookies.get(ACCESS_COOKIE)?.value)
+  const access = request.cookies.get(ACCESS_COOKIE)?.value
+  let claims: { role: string } | undefined = await verifyAccess(access)
   let refreshed: Awaited<ReturnType<typeof rotateTokens>>
   let expired = false
+  // A correctly signed token can still be revoked (password changed or signed out elsewhere, account deactivated or deleted).
+  // Check it the way the pages do, or this proxy and the page disagree and bounce the visitor between /login and /dashboard.
+  if (claims && !(await userFromAccessToken(access))) {
+    claims = undefined
+    expired = true
+  }
   const refreshToken = request.cookies.get(REFRESH_COOKIE)?.value
   if (!claims && refreshToken) {
     refreshed = await rotateTokens(refreshToken)
     if (refreshed) {
+      expired = false
       claims = { role: refreshed.role }
       // Hand the new token to this render as well as to the browser.
       request.cookies.set(ACCESS_COOKIE, refreshed.access)

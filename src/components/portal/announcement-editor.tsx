@@ -42,6 +42,12 @@ export function AnnouncementEditor({ initial }: { initial: Announcement | null }
   const update = (patch: Partial<Announcement>) => {
     setDraft((current) => ({ ...current, ...patch }))
     setResult(undefined)
+    // Editing a field retires its old message; Publish checks everything again.
+    const touched = Object.keys(patch).map((key) => (key === 'startsOn' || key === 'endsOn' ? 'dates' : key))
+    setErrors((current) => {
+      if (!touched.some((key) => key in current)) return current
+      return Object.fromEntries(Object.entries(current).filter(([key]) => !touched.includes(key)))
+    })
   }
 
   const validate = () => {

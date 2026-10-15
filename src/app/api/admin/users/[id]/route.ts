@@ -19,6 +19,6 @@ export const DELETE = route<{ id: string }>(async (request, { params }) => {
   const [updated] = await db.update(schema.users).set({ role: 'MEMBER' }).where(eq(schema.users.id, id)).returning()
   // Their current tokens still say SUPER_ADMIN; force a fresh sign-in so the new role applies everywhere.
   await revokeAllSessions(id)
-  await audit({ actor: admin, target: updated, action: 'admin.revoke', detail: 'Role SUPER_ADMIN → MEMBER', oldValue: { role: 'SUPER_ADMIN' }, newValue: { role: 'MEMBER' }, ip: clientIp(request) })
+  await audit({ actor: admin, target: updated, action: 'admin.revoke', detail: 'Role Super Admin → Member', oldValue: { role: 'SUPER_ADMIN' }, newValue: { role: 'MEMBER' }, ip: clientIp(request) })
   return ok(toMember(updated))
 })

@@ -1,12 +1,12 @@
 import Link from 'next/link'
 
 import { BarList, Panel, PortalHeading } from '@/components/portal/ui'
-import { metadataFor } from '@/config/meta'
 import { birthMonth, formatDate, fullName, maritalStatusLabels, monthNames, type MaritalStatus } from '@/config/portal'
 import { routes } from '@/config/routes'
 import { activeMembers, listLookups, lookupCounts } from '@/lib/server/members'
+import { pageMetadata } from '@/lib/server/metadata'
 
-export const metadata = metadataFor(routes.adminReports)
+export const generateMetadata = pageMetadata(routes.adminReports)
 
 export default async function ReportsPage() {
   const [active, departments, districts, byDep, byDis] = await Promise.all([

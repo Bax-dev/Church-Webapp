@@ -1,10 +1,10 @@
 import { LookupManager } from '@/components/portal/admin-tools'
 import { Panel, PortalHeading } from '@/components/portal/ui'
-import { metadataFor } from '@/config/meta'
 import { routes } from '@/config/routes'
 import { listLookups, lookupCounts } from '@/lib/server/members'
+import { pageMetadata } from '@/lib/server/metadata'
 
-export const metadata = metadataFor(routes.adminDepartments)
+export const generateMetadata = pageMetadata(routes.adminDepartments)
 
 export default async function AdminDepartmentsPage() {
   const [items, counts] = await Promise.all([listLookups('department'), lookupCounts('department')])

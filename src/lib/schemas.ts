@@ -95,6 +95,25 @@ export const announcementSchema = z.object({
   delaySeconds: z.number().min(0).max(30).optional(),
 }).refine((a) => !a.startsOn || !a.endsOn || a.endsOn >= a.startsOn, { path: ['endsOn'], message: 'The end date is before the start date.' })
 
+/** The floating WhatsApp button and the top glass banner (/admin/settings). */
+export const siteWidgetsSchema = z.object({
+  whatsapp: z.object({
+    enabled: z.boolean(),
+    phone: z.string().trim().max(24).refine((s) => !s || /^\+?[\d\s()-]{7,24}$/.test(s), 'Enter the number in international format, e.g. +234 801 234 5678.'),
+    message: z.string().trim().max(300, 'Keep the message under 300 characters.'),
+    label: z.string().trim().max(60, 'Keep the label under 60 characters.'),
+    side: z.enum(['left', 'right']),
+  }).refine((w) => !w.enabled || w.phone.replace(/\D/g, '').length >= 7, { path: ['phone'], message: 'Add a WhatsApp number before switching the button on.' }),
+  banner: z.object({
+    enabled: z.boolean(),
+    text: z.string().trim().max(160, 'Keep the banner under 160 characters.'),
+    linkLabel: z.string().trim().max(40, 'Keep the link label under 40 characters.'),
+    linkHref: z.string().trim().refine((s) => !s || /^(\/(?!\/)|https?:\/\/)/.test(s), 'A link must start with / or https://.'),
+  })
+    .refine((b) => !b.enabled || b.text.length > 0, { path: ['text'], message: 'Write the banner text before switching it on.' })
+    .refine((b) => !b.linkLabel === !b.linkHref, { path: ['linkHref'], message: 'Give the link both a label and an address, or leave both empty.' }),
+})
+
 /** Query string for the members table and the export (PRD A-02, A-03). */
 export const memberQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),

@@ -1,26 +1,23 @@
 import { Pastors } from '@/components/pastors'
 import { ScriptureBand, Story } from '@/components/sections'
 import { Beliefs, CTA, PageIntro, Pillars } from '@/components/site-shell'
-import { metadataFor } from '@/config/meta'
 import { routes } from '@/config/routes'
+import { getContent } from '@/lib/server/content'
+import { pageMetadata } from '@/lib/server/metadata'
 
-export const metadata = metadataFor(routes.about)
+export const generateMetadata = pageMetadata(routes.about)
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const { about, shared } = await getContent()
   return (
     <>
-      <PageIntro
-        image="worship"
-        eyebrow="About us"
-        title={<>Rooted in faith.<br /><em>Growing</em> together.</>}
-        text="Presbyterian Centre is a congregation in Lekki seeking to love God, follow Jesus Christ and serve our neighbours together."
-      />
-      <Story />
-      <Pastors />
-      <Pillars />
-      <ScriptureBand image="choir" />
-      <Beliefs />
-      <CTA />
+      <PageIntro {...about.intro} />
+      <Story content={about.story} />
+      <Pastors content={about.pastors} />
+      <Pillars content={shared.pillars} />
+      <ScriptureBand content={about.scripture} />
+      <Beliefs content={about.beliefs} />
+      <CTA content={shared.cta} />
     </>
   )
 }

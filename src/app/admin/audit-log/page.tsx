@@ -1,12 +1,12 @@
 import Link from 'next/link'
 
 import { Pagination, Panel, PortalHeading } from '@/components/portal/ui'
-import { metadataFor } from '@/config/meta'
 import { formatDateTime } from '@/config/portal'
 import { routes } from '@/config/routes'
 import { auditPage } from '@/lib/server/members'
+import { pageMetadata } from '@/lib/server/metadata'
 
-export const metadata = metadataFor(routes.adminAuditLog)
+export const generateMetadata = pageMetadata(routes.adminAuditLog)
 
 type Props = { searchParams: Promise<{ page?: string }> }
 

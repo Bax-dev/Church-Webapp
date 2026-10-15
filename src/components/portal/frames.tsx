@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react'
 import {
-  BarChart3, Building2, Church, FileClock, LayoutDashboard, MapPin, Megaphone, Settings, ShieldCheck, SlidersHorizontal, UserRound, Users,
+  BarChart3, Building2, Church, FileClock, LayoutDashboard, MapPin, Megaphone, PanelsTopLeft, Radio, Settings, ShieldCheck, SlidersHorizontal, UserRound, Users,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -15,7 +15,7 @@ import type { Viewer } from '@/config/session'
 const icons: Record<PortalNavKey, LucideIcon> = {
   dashboard: LayoutDashboard, profile: UserRound, settings: Settings, admin: ShieldCheck,
   adminMembers: Users, adminDepartments: Building2, adminDistricts: MapPin, adminReports: BarChart3, adminAuditLog: FileClock,
-  adminUsers: ShieldCheck, adminPastors: Church, adminAnnouncements: Megaphone, adminSettings: SlidersHorizontal,
+  adminUsers: ShieldCheck, adminPrayer: Radio, adminContent: PanelsTopLeft, adminPastors: Church, adminAnnouncements: Megaphone, adminSettings: SlidersHorizontal,
 }
 
 function Account({ viewer, note }: { viewer: NonNullable<Viewer>; note: string }) {

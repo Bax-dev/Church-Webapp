@@ -18,7 +18,7 @@ export async function getViewer(): Promise<Viewer> {
 
 export async function requireMember() {
   const user = await currentUser()
-  if (!user) redirect(routes.login.path)
+  if (!user) redirect(`${routes.login.path}/`)
   return user
 }
 

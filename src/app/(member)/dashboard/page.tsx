@@ -2,17 +2,19 @@ import Link from 'next/link'
 import { ArrowRight, Building2, CalendarHeart, MapPin, Pencil } from 'lucide-react'
 
 import { Panel, PortalHeading, StatusBadge } from '@/components/portal/ui'
-import { metadataFor } from '@/config/meta'
 import { formatDate, lookupName, profileFields } from '@/config/portal'
 import { routes } from '@/config/routes'
 import { departmentPeers, listLookups, toMember } from '@/lib/server/members'
+import { getContent } from '@/lib/server/content'
 import { requireMember } from '@/lib/server/session'
+import { pageMetadata } from '@/lib/server/metadata'
 
-export const metadata = metadataFor(routes.dashboard)
+export const generateMetadata = pageMetadata(routes.dashboard)
 
 export default async function DashboardPage() {
   const me = toMember(await requireMember())
-  const [departments, districts, peers] = await Promise.all([listLookups('department'), listLookups('district'), departmentPeers(me.departmentId)])
+  const [departments, districts, peers, { portal }] = await Promise.all([listLookups('department'), listLookups('district'), departmentPeers(me.departmentId), getContent()])
+  const copy = portal.dashboard
   const complete = profileFields.filter((key) => me[key]).length
   const percent = Math.round((complete / profileFields.length) * 100)
   const others = Math.max(0, peers - (me.status === 'ACTIVE' ? 1 : 0))
@@ -20,16 +22,14 @@ export default async function DashboardPage() {
   return (
     <>
       <PortalHeading
-        eyebrow="Member dashboard"
-        title={`Welcome, ${me.firstName}.`}
-        text={percent < 100
-          ? 'Your record is not complete yet. Adding your details helps the church care for you well.'
-          : 'Here is what the church has on record for you. Keeping it current helps us care for you well.'}
+        eyebrow={copy.eyebrow}
+        title={copy.title.replaceAll('{name}', me.firstName)}
+        text={percent < 100 ? copy.incompleteText : copy.completeText}
         actions={<Link className="button-primary" href={routes.profileEdit.path}><Pencil size={15} /> Update my details</Link>}
       />
 
       <div className="dash-grid">
-        <Panel title="Your record">
+        <Panel title={copy.recordTitle}>
           <div className="completion">
             <div className="completion-head"><span>Profile complete</span><strong>{percent}%</strong></div>
             <div className="bar-track" role="img" aria-label={`${percent}% of your profile is complete`}><span className="bar-fill" style={{ width: `${percent}%` }} /></div>
@@ -42,7 +42,7 @@ export default async function DashboardPage() {
           <Link className="pathway-link" href={routes.profile.path}>View full profile <ArrowRight size={15} /></Link>
         </Panel>
 
-        <Panel title="Your church family">
+        <Panel title={copy.familyTitle}>
           <ul className="icon-list">
             <li>
               <span className="card-icon"><Building2 size={17} strokeWidth={1.7} /></span>
@@ -57,7 +57,7 @@ export default async function DashboardPage() {
         </Panel>
       </div>
 
-      <Panel title="Quick links">
+      <Panel title={copy.quickLinksTitle}>
         <div className="quick-links">
           <Link href={routes.profileEdit.path}>Edit my profile <ArrowRight size={15} /></Link>
           <Link href={routes.settings.path}>Change my password <ArrowRight size={15} /></Link>

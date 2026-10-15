@@ -36,7 +36,7 @@ export function ProfileForm({ member, departments, districts, endpoint, doneHref
     const all = v.collect({
       firstName: v.required(f.firstName, 'a first name'),
       lastName: v.required(f.lastName, 'a last name'),
-      email: v.email(f.email),
+      email: v.email(f.email, admin ? 'an email address' : undefined),
       phone: v.phone(f.phone),
       dateOfBirth: v.dateOfBirth(f.dateOfBirth),
       maritalStatus: v.choose(f.maritalStatus, 'a marital status'),
@@ -65,8 +65,8 @@ export function ProfileForm({ member, departments, districts, endpoint, doneHref
       <fieldset>
         <legend>Personal details</legend>
         <div className="form-grid">
-          <Field label="First name" autoComplete={admin ? 'off' : 'given-name'} {...form.bind('firstName')} />
-          <Field label="Last name" autoComplete={admin ? 'off' : 'family-name'} {...form.bind('lastName')} />
+          <Field label="First name" maxLength={60} autoComplete={admin ? 'off' : 'given-name'} {...form.bind('firstName')} />
+          <Field label="Last name" maxLength={60} autoComplete={admin ? 'off' : 'family-name'} {...form.bind('lastName')} />
           <Field
             label="Email address" type="email" autoComplete={admin ? 'off' : 'email'}
             hint={emailChanged ? (admin ? 'The new address replaces the old one straight away.' : 'We will email the new address a link to confirm it. Until then, keep signing in with your current one.') : undefined}

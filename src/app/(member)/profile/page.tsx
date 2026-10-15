@@ -3,13 +3,14 @@ import { Pencil } from 'lucide-react'
 
 import { FormResult } from '@/components/portal/fields'
 import { Avatar, DefinitionList, Panel, PortalHeading, StatusBadge } from '@/components/portal/ui'
-import { metadataFor } from '@/config/meta'
 import { formatDate, fullName, initials, lookupName, maritalStatusLabels } from '@/config/portal'
 import { routes } from '@/config/routes'
 import { listLookups, toMember } from '@/lib/server/members'
+import { getContent } from '@/lib/server/content'
 import { requireMember } from '@/lib/server/session'
+import { pageMetadata } from '@/lib/server/metadata'
 
-export const metadata = metadataFor(routes.profile)
+export const generateMetadata = pageMetadata(routes.profile)
 
 /** Shown after the "confirm your new email" link sends the member back here. */
 const emailNotices: Record<string, { error?: boolean; text: string }> = {
@@ -22,15 +23,15 @@ type Props = { searchParams: Promise<{ email?: string }> }
 
 export default async function ProfilePage({ searchParams }: Props) {
   const me = toMember(await requireMember())
-  const [departments, districts] = await Promise.all([listLookups('department'), listLookups('district')])
+  const [departments, districts, { portal }] = await Promise.all([listLookups('department'), listLookups('district'), getContent()])
   const notice = emailNotices[(await searchParams).email ?? '']
 
   return (
     <>
       <PortalHeading
-        eyebrow="My profile"
-        title="Your details"
-        text="Only you and the church administrators can see this information."
+        eyebrow={portal.profile.eyebrow}
+        title={portal.profile.title}
+        text={portal.profile.text}
         actions={<Link className="button-primary" href={routes.profileEdit.path}><Pencil size={15} /> Edit profile</Link>}
       />
       {notice && <FormResult error={notice.error}>{notice.text}</FormResult>}

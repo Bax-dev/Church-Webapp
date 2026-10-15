@@ -30,6 +30,13 @@ export function useForm<K extends string>(initial: Record<K, string>) {
     error: errors[name],
     onChange: (event: { target: { value: string } }) => {
       setValues((current) => ({ ...current, [name]: event.target.value }))
+      // Once the person edits a field, its old message no longer describes it; the next submit re-checks.
+      setErrors((current) => {
+        if (!(name in current)) return current
+        const next = { ...current }
+        delete next[name]
+        return next
+      })
       if (state === 'done') setState('idle')
     },
   })
@@ -109,7 +116,7 @@ export function SignupForm() {
           We have emailed a sign-up link to <strong>{values.email.trim()}</strong>. Open it within 24 hours to set your password.
           If it has not arrived after a few minutes, check your spam or promotions folder.
         </p>
-        <button type="button" className="text-button" onClick={() => form.setState('idle')}>Use a different email address</button>
+        <button type="button" className="text-button" onClick={() => { setValues((current) => ({ ...current, email: '' })); form.setState('idle') }}>Use a different email address</button>
       </div>
     )
   }
@@ -119,8 +126,8 @@ export function SignupForm() {
       await api('/api/auth/signup', { body: { firstName: f.firstName, lastName: f.lastName, email: f.email, consent: f.consent === 'yes' } })
     })}>
       <div className="form-grid">
-        <Field label="First name" autoComplete="given-name" {...form.bind('firstName')} />
-        <Field label="Last name" autoComplete="family-name" {...form.bind('lastName')} />
+        <Field label="First name" maxLength={60} autoComplete="given-name" {...form.bind('firstName')} />
+        <Field label="Last name" maxLength={60} autoComplete="family-name" {...form.bind('lastName')} />
         <Field className="span-2" label="Email address" type="email" autoComplete="email" {...form.bind('email')} />
       </div>
 
@@ -128,7 +135,7 @@ export function SignupForm() {
         name="consent"
         checked={values.consent === 'yes'}
         error={form.errors.consent}
-        onChange={(event) => setValues((current) => ({ ...current, consent: event.target.checked ? 'yes' : '' }))}
+        onChange={(event) => form.bind('consent').onChange({ target: { value: event.target.checked ? 'yes' : '' } })}
         label="I agree that Presbyterian Centre may store and use these details to keep in touch with me and organise church life, in line with the Nigeria Data Protection Act 2023. I can ask to see, correct or delete them at any time."
       />
 
@@ -144,12 +151,17 @@ export function SignupForm() {
 const passwordHint = '8+ characters with upper and lower case letters and a number'
 
 /** A link page opened without a valid token. */
-export function LinkExpired({ again, againLabel }: { again: string; againLabel: string }) {
+/** `missing`: the page was opened without a link token at all (typed or bookmarked), so "expired" would mislead. */
+export function LinkExpired({ again, againLabel, missing }: { again: string; againLabel: string; missing?: boolean }) {
   return (
     <div className="verify-state" role="alert">
       <span className="card-icon"><Clock size={20} strokeWidth={1.7} /></span>
-      <h2>This link has expired</h2>
-      <p>Links work once and only for a limited time. Request a new one and use the most recent email.</p>
+      <h2>{missing ? 'Open the link from your email' : 'This link has expired'}</h2>
+      <p>
+        {missing
+          ? 'This page needs the link we email you. Open it from the most recent email, or request a new one.'
+          : 'Links work once and only for a limited time. Request a new one and use the most recent email.'}
+      </p>
       <Link className="button-primary" href={again}>{againLabel} <ArrowRight size={16} /></Link>
     </div>
   )

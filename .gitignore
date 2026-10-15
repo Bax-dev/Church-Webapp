@@ -25,3 +25,24 @@ Thumbs.db
 .env
 .env*.local
 uploads
+
+# SST / OpenNext build output
+.sst
+.open-next
+
+# AI agent / coding-assistant tooling (local only, never committed)
+.agents/
+.argent/
+.claude/
+.codex/
+.cursor/
+.windsurf/
+.gemini/
+.continue/
+.roo/
+.cline/
+.kiro/
+.junie/
+.aider*
+.mcp.json
+skills-lock.json

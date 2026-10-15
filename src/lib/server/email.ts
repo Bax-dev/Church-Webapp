@@ -1,7 +1,7 @@
 import { appendFile } from "node:fs/promises";
 import nodemailer, { type Transporter } from "nodemailer";
 
-import { SITE } from "@/config/site";
+import { getContent } from "@/lib/server/content";
 import { env } from "@/lib/server/env";
 
 let transport: Transporter | undefined;
@@ -28,11 +28,16 @@ async function send(
   lines: string[],
   action?: { label: string; url: string },
 ) {
+  // The church name follows Admin → Site content → Church details; templates write it as {church}.
+  const church = (await getContent()).site.identity.name;
+  const fill = (value: string) => value.replaceAll("{church}", church);
+  subject = fill(subject);
+  lines = lines.map(fill);
   const text = [
     ...lines,
     ...(action ? ["", `${action.label}: ${action.url}`] : []),
     "",
-    `— ${SITE.name}`,
+    `— ${church}`,
   ].join("\n");
   const html = `<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.6;color:#1b2a3d">
 ${lines.map((line) => `<p>${escape(line)}</p>`).join("\n")}
@@ -42,7 +47,7 @@ ${
 <p style="font-size:13px;color:#5b6b80">Or paste this link into your browser: ${escape(action.url)}</p>`
     : ""
 }
-<p style="color:#5b6b80">— ${escape(SITE.name)}</p></div>`;
+<p style="color:#5b6b80">— ${escape(church)}</p></div>`;
 
   const mailer = transporter();
   if (!mailer) {
@@ -63,10 +68,10 @@ export const emails = {
   signupLink: (to: string, firstName: string, token: string) =>
     send(
       to,
-      `Finish joining ${SITE.name}`,
+      `Finish joining {church}`,
       [
         `Hello ${firstName},`,
-        `Thank you for joining the ${SITE.name} member portal. Open the link below within 24 hours to confirm your email address and choose a password.`,
+        `Thank you for joining the {church} member portal. Open the link below within 24 hours to confirm your email address and choose a password.`,
         "If you did not ask for this, you can ignore this email.",
       ],
       { label: "Set my password", url: link("/set-password", token) },
@@ -75,7 +80,7 @@ export const emails = {
   alreadyRegistered: (to: string, firstName: string) =>
     send(
       to,
-      `You already have a ${SITE.name} account`,
+      `You already have a {church} account`,
       [
         `Hello ${firstName},`,
         "Someone (hopefully you) tried to create a member account with this email address, but you already have one.",
@@ -87,7 +92,7 @@ export const emails = {
   resetLink: (to: string, firstName: string, token: string) =>
     send(
       to,
-      `Reset your ${SITE.name} password`,
+      `Reset your {church} password`,
       [
         `Hello ${firstName},`,
         "We received a request to reset your password. The link below works once and expires in one hour.",
@@ -102,7 +107,7 @@ export const emails = {
       "Confirm your new email address",
       [
         `Hello ${firstName},`,
-        `Please confirm that you want to use this address for your ${SITE.name} account. The link expires in 24 hours.`,
+        `Please confirm that you want to use this address for your {church} account. The link expires in 24 hours.`,
       ],
       {
         label: "Confirm this address",
@@ -113,7 +118,7 @@ export const emails = {
   approved: (to: string, firstName: string) =>
     send(
       to,
-      `Your ${SITE.name} account is ready`,
+      `Your {church} account is ready`,
       [
         `Hello ${firstName},`,
         "The church office has approved your member account. You can now sign in.",

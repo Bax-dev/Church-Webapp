@@ -1,10 +1,10 @@
 import { PastorEditor } from '@/components/portal/pastor-editor'
 import { Panel, PortalHeading } from '@/components/portal/ui'
-import { metadataFor } from '@/config/meta'
 import { routes } from '@/config/routes'
 import { getPastors } from '@/lib/server/pastors'
+import { pageMetadata } from '@/lib/server/metadata'
 
-export const metadata = metadataFor(routes.adminPastors)
+export const generateMetadata = pageMetadata(routes.adminPastors)
 
 export default async function AdminPastorsPage() {
   return (

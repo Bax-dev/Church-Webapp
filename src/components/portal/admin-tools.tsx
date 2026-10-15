@@ -9,11 +9,13 @@ import {
 
 import { maritalOptions, useForm } from '@/components/portal/auth-forms'
 import { Field, FormResult, SelectField } from '@/components/portal/fields'
+import { Toggle } from '@/components/portal/prayer-admin'
 import { StatusBadge } from '@/components/portal/ui'
 import {
   formatDate, fullName, lookupName, monthNames, statusLabels, type ApprovalMode, type Lookup, type Member, type Page, type Status,
 } from '@/config/portal'
 import { routes } from '@/config/routes'
+import type { SiteWidgets } from '@/config/site-widgets'
 import { ApiError, api } from '@/lib/api-client'
 import * as v from '@/lib/validators'
 
@@ -26,6 +28,9 @@ const monthOptions = monthNames.map((label, index) => ({ value: String(index + 1
 const errorText = (error: unknown) => (error instanceof ApiError ? error.message : 'Something went wrong. Please try again.')
 
 /** Server-side search, filters, sorting and pagination over GET /api/admin/members (PRD A-02, A-03), with exports of the same filter. */
+/** Fired by the add-member form; the members table listens and reloads. */
+const MEMBERS_CHANGED = 'pc:members-changed'
+
 export function MembersTable({ departments, districts }: { departments: Lookup[]; districts: Lookup[] }) {
   const [query, setQuery] = useState('')
   const [debounced, setDebounced] = useState('')
@@ -44,13 +49,21 @@ export function MembersTable({ departments, districts }: { departments: Lookup[]
   for (const [key, value] of [...params]) if (!value) params.delete(key)
   const filterString = params.toString()
 
+  // Bumped when a member is added on this page, so the table reloads without a page refresh.
+  const [version, setVersion] = useState(0)
+  useEffect(() => {
+    const reload = () => setVersion((n) => n + 1)
+    window.addEventListener(MEMBERS_CHANGED, reload)
+    return () => window.removeEventListener(MEMBERS_CHANGED, reload)
+  }, [])
+
   useEffect(() => {
     let cancelled = false
     api<Page<Member>>(`/api/admin/members?${filterString}&page=${page}&limit=${PAGE_SIZE}`)
       .then((result) => { if (!cancelled) { setData(result); setError(undefined) } })
       .catch((e) => { if (!cancelled) setError(errorText(e)) })
     return () => { cancelled = true }
-  }, [filterString, page])
+  }, [filterString, page, version])
 
   const activeFilters = Object.values(filters).filter(Boolean).length + (debounced ? 1 : 0)
   const total = data?.total ?? 0
@@ -180,15 +193,16 @@ export function AddMemberForm() {
 
   return (
     <form className="form-stack add-member" noValidate onSubmit={form.submit((f) => v.collect({
-      firstName: v.required(f.firstName, 'a first name'), lastName: v.required(f.lastName, 'a last name'), email: v.email(f.email),
+      firstName: v.required(f.firstName, 'a first name'), lastName: v.required(f.lastName, 'a last name'), email: v.email(f.email, 'their email address'),
     }), async (f) => {
       await api('/api/admin/members', { body: f })
       form.setValues({ firstName: '', lastName: '', email: '' })
+      window.dispatchEvent(new Event(MEMBERS_CHANGED))
       router.refresh()
     })}>
       <div className="form-grid">
-        <Field label="First name" autoComplete="off" {...form.bind('firstName')} />
-        <Field label="Last name" autoComplete="off" {...form.bind('lastName')} />
+        <Field label="First name" maxLength={60} autoComplete="off" {...form.bind('firstName')} />
+        <Field label="Last name" maxLength={60} autoComplete="off" {...form.bind('lastName')} />
         <Field className="span-2" label="Email address" type="email" autoComplete="off" hint="We email them a link to set their password." {...form.bind('email')} />
       </div>
       {form.formError && <FormResult error>{form.formError}</FormResult>}
@@ -302,7 +316,8 @@ export function LookupManager({ kind, initial }: { kind: 'department' | 'distric
 
   const rename = async (event: FormEvent) => {
     event.preventDefault()
-    if (!editing?.name.trim()) return
+    if (!editing) return
+    if (!editing.name.trim()) return setEditing({ ...editing, error: `Enter a ${kind} name.` })
     setBusy(true)
     try {
       await patch(editing.id, { name: editing.name.trim() })
@@ -332,7 +347,7 @@ export function LookupManager({ kind, initial }: { kind: 'department' | 'distric
             {editing?.id === item.id ? (
               <form className="lookup-rename" onSubmit={rename}>
                 <label className="sr-only" htmlFor={`rename-${item.id}`}>Rename {item.name}</label>
-                <input id={`rename-${item.id}`} value={editing.name} autoFocus aria-invalid={editing.error ? true : undefined} onChange={(e) => setEditing({ id: item.id, name: e.target.value })} />
+                <input id={`rename-${item.id}`} value={editing.name} autoFocus aria-invalid={editing.error ? true : undefined} onChange={(e) => setEditing({ id: item.id, name: e.target.value })} onKeyDown={(e) => { if (e.key === 'Escape') { e.preventDefault(); setEditing(undefined) } }} />
                 <button className="button-primary" type="submit" disabled={busy}>Save</button>
                 <button className="button-secondary" type="button" onClick={() => setEditing(undefined)}>Cancel</button>
                 {editing.error && <span className="field-error">{editing.error}</span>}
@@ -351,7 +366,7 @@ export function LookupManager({ kind, initial }: { kind: 'department' | 'distric
                   <button
                     type="button" className="icon-button danger" aria-label={`Delete ${item.name}`}
                     disabled={busy || item.members > 0} title={item.members > 0 ? `Move its ${item.members} members first, or deactivate it instead` : undefined}
-                    onClick={() => act(async () => {
+                    onClick={() => window.confirm(`Delete “${item.name}”? This cannot be undone.`) && act(async () => {
                       await api(`${base}/${item.id}`, { method: 'DELETE' })
                       setItems((list) => list.filter((x) => x.id !== item.id))
                     })}
@@ -409,6 +424,68 @@ export function SettingsForm({ initial }: { initial: ApprovalMode }) {
   )
 }
 
+/** The floating WhatsApp button and the glass banner across the top of every public page. */
+export function SiteWidgetsForm({ initial }: { initial: SiteWidgets }) {
+  const router = useRouter()
+  const [widgets, setWidgets] = useState(initial)
+  const [state, setState] = useState<{ ok: boolean; text: string; fields?: Record<string, string> }>()
+  const [busy, setBusy] = useState(false)
+  const { whatsapp, banner } = widgets
+
+  const setWhatsApp = (patch: Partial<SiteWidgets['whatsapp']>) => { setWidgets((w) => ({ ...w, whatsapp: { ...w.whatsapp, ...patch } })); setState(undefined) }
+  const setBanner = (patch: Partial<SiteWidgets['banner']>) => { setWidgets((w) => ({ ...w, banner: { ...w.banner, ...patch } })); setState(undefined) }
+
+  const save = async (event: FormEvent) => {
+    event.preventDefault()
+    setBusy(true)
+    try {
+      setWidgets(await api<SiteWidgets>('/api/admin/site-widgets', { method: 'PATCH', body: widgets }))
+      setState({ ok: true, text: 'Saved. The website shows the change on the next page load.' })
+      router.refresh()
+    } catch (e) {
+      setState({ ok: false, text: errorText(e), fields: e instanceof ApiError ? e.fields : undefined })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <form className="form-stack" onSubmit={save}>
+      <fieldset>
+        <legend>WhatsApp button</legend>
+        <Toggle
+          label={whatsapp.enabled ? 'Showing on the website' : 'Hidden'}
+          text="A round WhatsApp button on the side of every public page. Visitors tap it to open a chat."
+          checked={whatsapp.enabled}
+          onChange={(enabled) => setWhatsApp({ enabled })}
+        />
+        <div className="form-grid">
+          <Field label="WhatsApp number" placeholder="+234 801 234 5678" inputMode="tel" value={whatsapp.phone} onChange={(e) => setWhatsApp({ phone: e.target.value })} hint="International format, with the country code." error={state?.fields?.whatsapp} />
+          <SelectField label="Side of the screen" value={whatsapp.side} onChange={(e) => setWhatsApp({ side: e.target.value as 'left' | 'right' })} options={[{ value: 'right', label: 'Right' }, { value: 'left', label: 'Left' }]} />
+          <Field label="Card heading" maxLength={60} value={whatsapp.label} onChange={(e) => setWhatsApp({ label: e.target.value })} />
+          <Field label="Pre-filled message" maxLength={300} value={whatsapp.message} onChange={(e) => setWhatsApp({ message: e.target.value })} hint="Typed into the chat for the visitor; they can change it before sending." />
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Top banner</legend>
+        <Toggle
+          label={banner.enabled ? 'Showing on the website' : 'Hidden'}
+          text="A frosted-glass strip above the menu on every public page. Visitors can close it; it returns when you change the text."
+          checked={banner.enabled}
+          onChange={(enabled) => setBanner({ enabled })}
+        />
+        <div className="form-grid">
+          <Field className="span-2" label="Banner text" maxLength={160} placeholder="Join us this Sunday at 8am for our Harvest Thanksgiving service." value={banner.text} onChange={(e) => setBanner({ text: e.target.value })} error={state?.fields?.banner} />
+          <Field label="Link label (optional)" maxLength={40} placeholder="Plan your visit" value={banner.linkLabel} onChange={(e) => setBanner({ linkLabel: e.target.value })} />
+          <Field label="Link address (optional)" placeholder="/visit or https://…" value={banner.linkHref} onChange={(e) => setBanner({ linkHref: e.target.value })} />
+        </div>
+      </fieldset>
+      <div className="form-actions"><button className="button-primary" type="submit" disabled={busy}>{busy ? 'Saving…' : 'Save'}</button></div>
+      {state && <FormResult error={!state.ok}>{state.text}</FormResult>}
+    </form>
+  )
+}
+
 /** Grant Super Admin to an existing member by email, or take it away (PRD A-10). */
 export function AdminManager({ selfId, admins }: { selfId: string; admins: Member[] }) {
   const router = useRouter()
@@ -455,7 +532,7 @@ export function AdminManager({ selfId, admins }: { selfId: string; admins: Membe
       </div>
       {message && <FormResult error={!message.ok}>{message.text}</FormResult>}
 
-      <form className="lookup-add" noValidate onSubmit={form.submit((f) => v.collect({ email: v.email(f.email) }), async (f) => {
+      <form className="lookup-add" noValidate onSubmit={form.submit((f) => v.collect({ email: v.email(f.email, 'their email address') }), async (f) => {
         await api('/api/admin/users', { body: f })
         setMessage({ ok: true, text: `${f.email.trim()} is now a Super Admin. They will see the admin area next time they load a page.` })
         form.setValues({ email: '' })
