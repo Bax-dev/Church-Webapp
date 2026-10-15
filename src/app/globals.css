@@ -36,6 +36,8 @@ a { color: inherit; }
 
 /* clip, not hidden: hidden makes this a scroll container and breaks the sticky header. */
 .site-shell { overflow-x: clip; }
+/* Root guard too: fixed and top-layer elements escape .site-shell, and any overflow lets iPhone Safari widen the page past the screen. */
+html, body { max-width: 100%; overflow-x: clip; }
 .container { width: min(1180px, calc(100% - 64px)); margin-inline: auto; }
 .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #315c91; }
 .serif { font-family: var(--app-font-serif); font-weight: 400; letter-spacing: -.035em; }
@@ -71,10 +73,10 @@ a { color: inherit; }
 .hero { position: relative; padding: 78px 0 92px; background: #f1f6fc; }
 .hero:before { content: ''; position: absolute; width: 580px; height: 580px; left: -280px; top: -330px; border: 1px solid rgba(22,75,145,.15); border-radius: 50%; box-shadow: 0 0 0 45px rgba(22,75,145,.035), 0 0 0 90px rgba(22,75,145,.025); pointer-events: none; }
 .hero-grid { display: grid; grid-template-columns: 1.02fr .98fr; align-items: center; gap: 48px; position: relative; }
-.hero-copy { padding: 10px 0 18px; animation: rise .7s both; }
+.hero-copy { min-width: 0; padding: 10px 0 18px; animation: rise .7s both; }
 .hero-label { display: flex; align-items: center; gap: 10px; margin-bottom: 25px; }
 .hero-label:before { content: ''; width: 28px; height: 1px; background: #3978bb; }
-.hero h1 { max-width: 620px; margin: 0; font-family: var(--app-font-serif); font-size: clamp(56px, 7.2vw, 92px); line-height: .96; letter-spacing: -.055em; font-weight: 400; color: #173b70; }
+.hero h1 { max-width: 620px; margin: 0; overflow-wrap: break-word; font-family: var(--app-font-serif); font-size: clamp(56px, 7.2vw, 92px); line-height: .96; letter-spacing: -.055em; font-weight: 400; color: #173b70; }
 .hero h1 em { color: #2869ad; font-style: italic; }
 .hero-intro { max-width: 450px; margin: 26px 0 29px; color: #4c6380; font-size: 16px; line-height: 1.75; }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
@@ -85,7 +87,9 @@ a { color: inherit; }
 .hero-art-frame img { width: 100%; height: 100%; object-fit: cover; object-position: 52% 42%; display: block; }
 .art-caption { position: absolute; z-index: 2; left: 27px; bottom: 26px; color: #fff; font-family: var(--app-font-serif); font-size: 25px; max-width: 270px; line-height: 1.1; }
 .art-caption small { display: block; font: 700 9px var(--app-font-sans); letter-spacing: .15em; text-transform: uppercase; margin-bottom: 9px; opacity: .8; }
-.floating-note { position: absolute; z-index: 3; right: -4px; top: 60px; width: 188px; padding: 18px 18px 16px; background: #fff; box-shadow: 0 16px 45px rgba(21,54,99,.14); transform: rotate(3deg); }
+/* The parallax wrapper covers the art, so the note is placed against .hero-art rather than a zero-width flex item beside the photo. */
+.floating-note-wrap { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.floating-note { pointer-events: auto; position: absolute; z-index: 3; right: -4px; top: 60px; width: 188px; padding: 18px 18px 16px; background: #fff; box-shadow: 0 16px 45px rgba(21,54,99,.14); transform: rotate(3deg); }
 .floating-note:before { content: ''; width: 38px; height: 3px; display: block; margin-bottom: 14px; background: #3978bb; }
 .floating-note strong { display: block; font-family: var(--app-font-serif); font-size: 20px; font-weight: 400; line-height: 1.1; color: #173b70; }
 .floating-note span { display: block; margin-top: 8px; color: #536b8b; font-size: 10px; }
@@ -688,8 +692,12 @@ a.table-name:hover { text-decoration: underline; }
   .announcement h2 { font-size: 25px; }
   .announcement-buttons { flex-direction: column; align-self: stretch; }
   .container { width: min(100% - 40px, 520px); }
-  .nav-inner { height: 68px; }
-  .menu-toggle { display: inline-flex; }
+  .nav-inner { height: 68px; gap: 12px; }
+  /* A long church name from the CMS wraps rather than pushing the menu button off-screen. */
+  .brand { min-width: 0; }
+  .brand > span:last-child { min-width: 0; }
+  .brand-name { overflow-wrap: anywhere; }
+  .menu-toggle { display: inline-flex; flex: 0 0 auto; }
   .nav-cta { display: none; }
   .nav-links .nav-account { display: block; font-weight: 700; color: #164b91; }
   .nav-links { display: none; position: absolute; left: 0; right: 0; top: 68px; padding: 12px 20px 20px; background: #fff; border-bottom: 1px solid #dbe6f3; flex-direction: column; align-items: stretch; gap: 0; }
