@@ -13,9 +13,6 @@ pnpm-debug.log*
 
 # editors
 /.idea
-.vscode/*
-!.vscode/settings.json
-!.vscode/extensions.json
 
 # system files
 .DS_Store
