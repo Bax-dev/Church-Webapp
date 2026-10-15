@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { unstable_rethrow } from 'next/navigation'
 import { ArrowRight } from 'lucide-react'
 
 import { Rich } from '@/components/content'
@@ -18,6 +19,7 @@ export async function Pastors({ content }: { content: PastorsContent }) {
   if (!content.show) return null
   // If the list cannot be read, the page still renders, just without this section.
   const pastors = await getPastors().catch((error) => {
+    unstable_rethrow(error) // request-time rendering signal, not a failure
     console.error('[pastors] could not load pastors', error)
     return []
   })

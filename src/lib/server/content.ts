@@ -1,5 +1,6 @@
 /** Site content (src/config/content.ts): stored as one JSON value in the settings table, merged over the defaults. */
 import { randomBytes } from 'node:crypto'
+import { unstable_rethrow } from 'next/navigation'
 import { cache } from 'react'
 
 import {
@@ -30,6 +31,8 @@ export const getContent = cache(async (): Promise<SiteContent> => {
   try {
     return fillTokens(await getRawContent())
   } catch (error) {
+    // Next signals request-time rendering (connection()) by throwing; let that through, catch only real failures.
+    unstable_rethrow(error)
     console.error('[content] could not load site content; showing defaults', error)
     return fillTokens(contentDefaults)
   }

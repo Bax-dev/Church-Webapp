@@ -1,5 +1,6 @@
 /** Key/value app settings (PRD §7 Setting), including the site announcement. */
 import { eq } from 'drizzle-orm'
+import { unstable_rethrow } from 'next/navigation'
 import { connection } from 'next/server'
 
 import { parseAnnouncement, type Announcement } from '@/config/announcement'
@@ -45,6 +46,8 @@ export async function getSiteWidgetsSafe(): Promise<SiteWidgets> {
   try {
     return await getSiteWidgets()
   } catch (error) {
+    // Next signals request-time rendering (connection()) by throwing; let that through, catch only real failures.
+    unstable_rethrow(error)
     console.error('[settings] could not load the site widgets', error)
     return parseWidgets(undefined)
   }
