@@ -1,5 +1,13 @@
 # Deploying to AWS
 
+> **Already set up (2026-10-15), account 552648195884, eu-west-1:** GitHub OIDC provider; role `pcn-github-deploy`
+> (inline policy `sst-deploy`, scoped to SST's services, IAM limited to `pcn-app-*` roles); RDS `pcn-app-db`
+> (PostgreSQL 17, db.t4g.micro, security group `sg-0f6c42c4373cf7bed`, deletion protection on); SSM SecureStrings
+> `/pcn-app/production/db-password` and `/pcn-app/production/database-url`; the GitHub `production` environment
+> (deploys from `main` only) with `AWS_ROLE_ARN`, `AWS_REGION`, `APP_URL`, `DATABASE_URL`, `JWT_*`.
+> Read the database URL with:
+> `aws ssm get-parameter --region eu-west-1 --name /pcn-app/production/database-url --with-decryption --query Parameter.Value --output text`
+
 | Piece | Where it runs | Defined in |
 |---|---|---|
 | Next.js app | Lambda (arm64) behind CloudFront, static files in S3 | `sst.config.ts` |
