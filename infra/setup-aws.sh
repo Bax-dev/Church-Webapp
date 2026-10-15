@@ -35,7 +35,8 @@ cat > "$TMP/trust.json" <<EOF
 EOF
 # Full access only to the services SST uses; ECR limited to the `sst-asset` repository SST's bootstrap creates.
 # IAM is limited to roles tagged sst:app=pcn-app (SST tags everything it creates). Names can't be used: SST shortens
-# long role names to `prod-…` or drops the prefix entirely.
+# long role names to `prod-…` or drops the prefix entirely. iam:PassRole ignores tag conditions (AWS only evaluates
+# iam:PassedToService / iam:AssociatedResourceArn for it), so passing is limited to Lambda instead.
 cat > "$TMP/policy.json" <<EOF
 {"Version":"2012-10-17","Statement":[
  {"Sid":"SstServices","Effect":"Allow","Action":[
@@ -51,9 +52,9 @@ cat > "$TMP/policy.json" <<EOF
    "iam:ListInstanceProfilesForRole"],
   "Resource":"arn:aws:iam::${ACCT}:role/*",
   "Condition":{"StringEquals":{"iam:ResourceTag/sst:app":"pcn-app"}}},
- {"Sid":"PassAppRolesToLambda","Effect":"Allow","Action":"iam:PassRole",
+ {"Sid":"PassRolesToLambda","Effect":"Allow","Action":"iam:PassRole",
   "Resource":"arn:aws:iam::${ACCT}:role/*",
-  "Condition":{"StringEquals":{"iam:ResourceTag/sst:app":"pcn-app","iam:PassedToService":"lambda.amazonaws.com"}}},
+  "Condition":{"StringEquals":{"iam:PassedToService":"lambda.amazonaws.com"}}},
  {"Sid":"SstAssetRepo","Effect":"Allow","Action":"ecr:*","Resource":"arn:aws:ecr:*:${ACCT}:repository/sst-asset"},
  {"Sid":"EcrLogin","Effect":"Allow","Action":"ecr:GetAuthorizationToken","Resource":"*"},
  {"Sid":"ServiceLinkedRoles","Effect":"Allow","Action":"iam:CreateServiceLinkedRole","Resource":"*",
