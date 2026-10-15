@@ -20,14 +20,18 @@ if ! aws iam get-open-id-connect-provider --open-id-connect-provider-arn "arn:aw
   echo "OIDC provider created"
 fi
 
-# --- Deploy role: only this repo's `production` environment can assume it
+# --- Deploy role: only this repo's `production` environment can assume it.
+# The token's `sub` prefix depends on the repo's OIDC settings: newer repos use the immutable form
+# `repo:owner@ownerId/name@repoId`, older ones `repo:owner/name`. Ask GitHub rather than guess.
+SUB_PREFIX=$(gh api "repos/${REPO}/actions/oidc/customization/sub" --jq '.sub_claim_prefix // empty' 2>/dev/null || true)
+SUB_PREFIX="${SUB_PREFIX:-repo:${REPO}}"
 cat > "$TMP/trust.json" <<EOF
 {"Version":"2012-10-17","Statement":[{"Effect":"Allow",
  "Principal":{"Federated":"arn:aws:iam::${ACCT}:oidc-provider/token.actions.githubusercontent.com"},
  "Action":"sts:AssumeRoleWithWebIdentity",
  "Condition":{"StringEquals":{
    "token.actions.githubusercontent.com:aud":"sts.amazonaws.com",
-   "token.actions.githubusercontent.com:sub":"repo:${REPO}:environment:production"}}}]}
+   "token.actions.githubusercontent.com:sub":"${SUB_PREFIX}:environment:production"}}}]}
 EOF
 # Full access only to the services SST uses; IAM limited to the app's own roles.
 cat > "$TMP/policy.json" <<EOF
@@ -49,6 +53,8 @@ if ! aws iam get-role --role-name pcn-github-deploy >/dev/null 2>&1; then
   aws iam create-role --role-name pcn-github-deploy --assume-role-policy-document "file://$TMP/trust.json" \
     --description "GitHub Actions production deploys for ${REPO}" >/dev/null
   echo "Role pcn-github-deploy created"
+else
+  aws iam update-assume-role-policy --role-name pcn-github-deploy --policy-document "file://$TMP/trust.json"
 fi
 aws iam put-role-policy --role-name pcn-github-deploy --policy-name sst-deploy --policy-document "file://$TMP/policy.json"
 ROLE_ARN="arn:aws:iam::${ACCT}:role/pcn-github-deploy"
