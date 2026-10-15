@@ -277,7 +277,9 @@ button[disabled] { cursor: not-allowed; opacity: .65; }
 .portal { padding: 40px 0 96px; background: #f5f8fc; min-height: 70vh; }
 .portal-layout { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 36px; align-items: start; }
 .portal-aside { position: sticky; top: 100px; }
-.portal-account { display: flex; gap: 11px; align-items: center; padding: 0 4px 18px; margin-bottom: 12px; border-bottom: 1px solid #d3dfed; }
+.portal-aside-head { display: flex; gap: 8px; align-items: flex-start; }
+.portal-account { display: flex; flex: 1; min-width: 0; gap: 11px; align-items: center; padding: 0 4px 18px; margin-bottom: 12px; border-bottom: 1px solid #d3dfed; }
+.portal-menu-bar, .portal-backdrop, .portal-close { display: none; }
 .portal-account strong { display: block; color: #173b70; font-size: 13px; }
 .portal-account small { display: block; color: #5d7391; font-size: 11px; }
 .portal-nav { display: flex; flex-direction: column; gap: 2px; }
@@ -644,12 +646,26 @@ a.table-name:hover { text-decoration: underline; }
   .nav-links a, .nav-signout { font-size: 12px; }
   .auth-layout, .auth-layout:not(.wide) { grid-template-columns: 1fr; gap: 36px; }
   .auth-aside { position: static; }
+  /* Portal sidebar becomes a drawer, opened from a bar naming the current page. */
   .portal-layout { grid-template-columns: minmax(0, 1fr); gap: 20px; }
-  .portal-aside { position: static; }
-  .portal-account { display: none; }
-  .portal-nav { flex-direction: row; overflow-x: auto; padding-bottom: 6px; }
-  .portal-nav a { flex: 0 0 auto; }
-  .portal-nav-divider, .portal-signout { display: none; }
+  .portal-menu-bar {
+    display: flex; gap: 12px; align-items: center; width: 100%; padding: 12px 14px; border: 1px solid #d3dfed; border-radius: 14px;
+    background: #fff; color: #173b70; font: inherit; text-align: left; cursor: pointer; box-shadow: 0 1px 2px rgba(23, 59, 112, .06);
+  }
+  .portal-menu-bar-label { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 2px; }
+  .portal-menu-bar-label small { color: #5d7391; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  .portal-menu-bar-label strong { display: flex; gap: 7px; align-items: center; overflow: hidden; font-size: 15px; white-space: nowrap; text-overflow: ellipsis; }
+  .portal-menu-bar-hint { flex: 0 0 auto; padding: 6px 11px; border-radius: 999px; background: #e7f0fb; color: #164b91; font-size: 12px; font-weight: 700; }
+  .portal-backdrop { display: block; position: fixed; inset: 0; z-index: 90; background: rgba(12, 31, 61, .45); opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .portal-backdrop.open { opacity: 1; pointer-events: auto; }
+  .portal-aside {
+    position: fixed; top: 0; bottom: 0; left: 0; z-index: 100; width: min(300px, 86vw); padding: 20px 14px 28px; overflow-y: auto;
+    background: #f5f8fc; box-shadow: 12px 0 32px rgba(12, 31, 61, .18); transform: translateX(-105%); transition: transform .25s ease, visibility .25s; visibility: hidden;
+  }
+  .portal-aside.open { transform: none; visibility: visible; }
+  .portal-close { display: grid; place-items: center; flex: 0 0 auto; width: 38px; height: 38px; border: 1px solid #d3dfed; border-radius: 50%; background: #fff; color: #173b70; cursor: pointer; }
+  .portal-nav a { padding: 12px; font-size: 14px; }
+  body.portal-drawer-open { overflow: hidden; }
   .stat-grid { grid-template-columns: 1fr 1fr; }
   .filter-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .detail-grid { grid-template-columns: minmax(0, 1fr); }
@@ -986,4 +1002,13 @@ a.table-name:hover { text-decoration: underline; }
 }
 @media (prefers-reduced-motion: reduce) {
   .glass-banner-orb, .glass-banner-dot, .whatsapp-widget .whatsapp-toggle, .whatsapp-card { animation: none; }
+}
+
+/* iPhone Safari zooms the page in when a form field with text under 16px is focused, and stays zoomed.
+   Touch screens and narrow windows get 16px fields everywhere; !important because individual forms set their own sizes. */
+@media (max-width: 900px), (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea { font-size: 16px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .portal-aside, .portal-backdrop { transition: none; }
 }
