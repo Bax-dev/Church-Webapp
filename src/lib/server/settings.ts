@@ -1,5 +1,6 @@
 /** Key/value app settings (PRD §7 Setting), including the site announcement. */
 import { eq } from 'drizzle-orm'
+import { connection } from 'next/server'
 
 import { parseAnnouncement, type Announcement } from '@/config/announcement'
 import type { PortalSettings } from '@/config/portal'
@@ -8,7 +9,12 @@ import { db, schema } from '@/lib/server/db'
 
 const DEFAULTS: PortalSettings = { approval: 'manual' }
 
-async function read(key: string) {
+/**
+ * One stored setting. Everything in this table is edited from the admin area, so a page that shows it must render
+ * per request: `connection()` keeps Next from prerendering it at build time, which would also need a database.
+ */
+export async function readSetting(key: string) {
+  await connection()
   const row = await db.query.settings.findFirst({ where: eq(schema.settings.key, key) })
   return row?.value
 }
@@ -18,20 +24,20 @@ async function write(key: string, value: unknown) {
 }
 
 export async function getPortalSettings(): Promise<PortalSettings> {
-  const value = (await read('portal')) as Partial<PortalSettings> | undefined
+  const value = (await readSetting('portal')) as Partial<PortalSettings> | undefined
   return { ...DEFAULTS, ...value }
 }
 
 export const savePortalSettings = (value: PortalSettings) => write('portal', value)
 
 export async function getAnnouncement(): Promise<Announcement | undefined> {
-  return parseAnnouncement(await read('announcement'))
+  return parseAnnouncement(await readSetting('announcement'))
 }
 
 export const saveAnnouncement = (value: Announcement) => write('announcement', value)
 
 export async function getSiteWidgets(): Promise<SiteWidgets> {
-  return parseWidgets(await read('widgets'))
+  return parseWidgets(await readSetting('widgets'))
 }
 
 /** For the site frame: never fails the page (an unreachable database means both widgets are off). */

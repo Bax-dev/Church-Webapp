@@ -34,7 +34,6 @@
     "zod": "4.6.6"
   },
   "devDependencies": {
-    "@swmansion/argent": "^0.29.0",
     "@types/node": "^25.3.3",
     "@types/nodemailer": "^8.0.2",
     "@types/pdfkit": "^0.17.6",

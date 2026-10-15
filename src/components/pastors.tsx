@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { connection } from 'next/server'
 import { ArrowRight } from 'lucide-react'
 
 import { Rich } from '@/components/content'
@@ -17,7 +16,6 @@ const initialsOf = (name: string) => name.split(/\s+/).filter(Boolean).slice(-2)
  */
 export async function Pastors({ content }: { content: PastorsContent }) {
   if (!content.show) return null
-  await connection()
   // If the list cannot be read, the page still renders, just without this section.
   const pastors = await getPastors().catch((error) => {
     console.error('[pastors] could not load pastors', error)
