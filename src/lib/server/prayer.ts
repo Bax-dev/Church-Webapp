@@ -1,4 +1,5 @@
 /** The prayer programme (settings table) and its daily guides (prayer_guides table). See src/config/prayer.ts. */
+import { unstable_rethrow } from 'next/navigation'
 import { cache } from 'react'
 import { and, desc, eq, lte } from 'drizzle-orm'
 
@@ -18,6 +19,8 @@ export const getProgramSafe = cache(async (): Promise<PrayerProgram> => {
   try {
     return await getProgram()
   } catch (error) {
+    // Next signals request-time rendering (connection()) by throwing; let that through, catch only real failures.
+    unstable_rethrow(error)
     console.error('[prayer] could not load the prayer programme', error)
     return readProgram({ enabled: false })
   }

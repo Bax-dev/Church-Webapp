@@ -33,19 +33,27 @@ cat > "$TMP/trust.json" <<EOF
    "token.actions.githubusercontent.com:aud":"sts.amazonaws.com",
    "token.actions.githubusercontent.com:sub":"${SUB_PREFIX}:environment:production"}}}]}
 EOF
-# Full access only to the services SST uses; IAM limited to the app's own roles; ECR limited to the `sst-asset`
-# repository that SST's first-run bootstrap creates.
+# Full access only to the services SST uses; ECR limited to the `sst-asset` repository SST's bootstrap creates.
+# IAM is limited to roles tagged sst:app=pcn-app (SST tags everything it creates). Names can't be used: SST shortens
+# long role names to `prod-…` or drops the prefix entirely.
 cat > "$TMP/policy.json" <<EOF
 {"Version":"2012-10-17","Statement":[
  {"Sid":"SstServices","Effect":"Allow","Action":[
    "lambda:*","cloudfront:*","cloudfront-keyvaluestore:*","s3:*","dynamodb:*","sqs:*",
    "ssm:*","logs:*","acm:*","route53:*","events:*","sts:GetCallerIdentity"],"Resource":"*"},
- {"Sid":"AppRolesOnly","Effect":"Allow","Action":[
-   "iam:CreateRole","iam:DeleteRole","iam:GetRole","iam:UpdateRole","iam:TagRole","iam:UntagRole",
+ {"Sid":"CreateAppRoles","Effect":"Allow","Action":["iam:CreateRole","iam:TagRole"],
+  "Resource":"arn:aws:iam::${ACCT}:role/*",
+  "Condition":{"StringEquals":{"aws:RequestTag/sst:app":"pcn-app"}}},
+ {"Sid":"ManageAppRoles","Effect":"Allow","Action":[
+   "iam:DeleteRole","iam:GetRole","iam:UpdateRole","iam:TagRole","iam:UntagRole",
    "iam:UpdateAssumeRolePolicy","iam:PutRolePolicy","iam:GetRolePolicy","iam:DeleteRolePolicy",
    "iam:AttachRolePolicy","iam:DetachRolePolicy","iam:ListRolePolicies","iam:ListAttachedRolePolicies",
-   "iam:ListInstanceProfilesForRole","iam:PassRole"],
-  "Resource":"arn:aws:iam::${ACCT}:role/pcn-app-*"},
+   "iam:ListInstanceProfilesForRole"],
+  "Resource":"arn:aws:iam::${ACCT}:role/*",
+  "Condition":{"StringEquals":{"iam:ResourceTag/sst:app":"pcn-app"}}},
+ {"Sid":"PassAppRolesToLambda","Effect":"Allow","Action":"iam:PassRole",
+  "Resource":"arn:aws:iam::${ACCT}:role/*",
+  "Condition":{"StringEquals":{"iam:ResourceTag/sst:app":"pcn-app","iam:PassedToService":"lambda.amazonaws.com"}}},
  {"Sid":"SstAssetRepo","Effect":"Allow","Action":"ecr:*","Resource":"arn:aws:ecr:*:${ACCT}:repository/sst-asset"},
  {"Sid":"EcrLogin","Effect":"Allow","Action":"ecr:GetAuthorizationToken","Resource":"*"},
  {"Sid":"ServiceLinkedRoles","Effect":"Allow","Action":"iam:CreateServiceLinkedRole","Resource":"*",
